@@ -8,6 +8,7 @@ pygame.init()
 size = width, height = 600, 600
 screen = pygame.display.set_mode(size)
 mouse_x, mouse_y = 0, 0
+all_sprites = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
@@ -41,6 +42,10 @@ def blitRotate(surf, image, pos, originPos, angle):
     surf.blit(rotated_image, rotated_image_rect)
 
 
+def distance(x1, y1, x2, y2):
+    return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+
 class Camera:
     def __init__(self, x, y, attached_entity=None):
         self.x, self.y = x, y
@@ -63,6 +68,9 @@ class Entity(pygame.sprite.Sprite):
         # Характеристики
         self.health = health
 
+    def coords(self):
+        return self.x, self.y
+
 
 class Tank(Entity):
     def __init__(self, x, y, direction=0, health=100, speed=1.5, ai='player'):
@@ -77,17 +85,40 @@ class Tank(Entity):
         self.x += math.cos(math.radians(self.direction)) * self.speed * multiplier
         self.y += math.sin(math.radians(self.direction)) * self.speed * multiplier
 
+    def turn(self, angle):
+        self.direction += angle
+
     def draw(self, screen, camera_x, camera_y):
         x = (camera_x - self.x) * -1
         y = (camera_y - self.y) * -1
+        target_x, target_y = self.get_target()
+        target_x, target_y = target_x - x, target_y - y
+        try:
+            target_angle = math.degrees(math.atan(target_y / target_x))
+        except ZeroDivisionError:
+            if target_y > 0:
+                target_angle = 90
+            elif target_y < 0:
+                target_angle = 270
+            else:
+                target_angle = 0
+        else:
+            if target_x < 0:
+                target_angle += 180
+
         blitRotate(screen, self.image_track, (x + width // 2, y + height // 2), (64, 64),
                    self.direction * -1)
         blitRotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
-                   self.direction * -1)
+                   target_angle * -1)
 
     def get_target(self):
         if self.ai == 'player':
-            return mouse_x, mouse_y
+            return mouse_x - width // 2, mouse_y - height // 2
+        elif self.ai == 'enemy':
+            return sorted(filter(lambda sprite: type(sprite) is Tank and sprite.ai == 'player', all_sprites),
+                          key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))[0].coords()
+        else:
+            return 0, 0
 
 
 class Box(Entity):
@@ -104,11 +135,13 @@ class Box(Entity):
 
 if __name__ == '__main__':
     screen.fill((0, 0, 0))
-    sprites = []
     for _ in range(10):
-        sprites.append(Box(random.randint(-300, 300), random.randint(-300, 300)))
+        all_sprites.add(Box(random.randint(-300, 300), random.randint(-300, 300)))
     tank = Tank(0, 0)
+    enemy_tank = Tank(40, 40, ai='enemy')
     camera = Camera(0, 0, tank)
+    all_sprites.add(tank)
+    all_sprites.add(enemy_tank)
     clock = pygame.time.Clock()
     running = True
     while running:
@@ -123,15 +156,14 @@ if __name__ == '__main__':
         if keys[pygame.K_s]:
             tank.move(-1)
         if keys[pygame.K_a]:
-            tank.direction -= 1.5
+            tank.turn(-1.5)
         if keys[pygame.K_d]:
-            tank.direction += 1.5
+            tank.turn(1.5)
 
         camera.update()
 
         screen.fill((0, 0, 0))
-        camera.draw(screen, tank)
-        for sprite in sprites:
+        for sprite in all_sprites:
             camera.draw(screen, sprite)
 
         pygame.display.flip()
