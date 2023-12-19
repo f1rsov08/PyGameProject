@@ -15,11 +15,12 @@ class Maps:
     def render_selected_map(self):
         self.map.create_board()
 
-    def navigation(self, screen):
+    def navigation(self, screen, coords):
         s = screen
-        self.x -= math.cos(math.radians(0)) * 1.5 * 1
-        self.y -= math.sin(math.radians(0)) * 1.5 * 1
-        s.blit(self.screen, (self.x, self.y))
+        s.blit(self.screen, (-coords[0], -coords[1]))
+
+    def getb(self):
+        return self.map
 
 
 class Floor(Entity):

@@ -132,6 +132,9 @@ class Tank(Entity):
         '''
         self.direction += angle
 
+    def getcoords(self):
+        return (self.x, self.y)
+
     def draw(self, screen, camera_x, camera_y):
         '''
         Рисование танка
@@ -181,36 +184,13 @@ class Tank(Entity):
             return 0, 0
 
 
-class Box(Entity):
-    '''
-    Коробка
-    '''
-
-    def __init__(self, x, y, direction=0):
-        super().__init__(x, y, direction, -1)
-
-        self.box = pygame.transform.scale(load_image("box.png"), (128, 128))
-
-    def draw(self, screen, camera_x, camera_y):
-        '''
-        Рисование коробки
-        '''
-        # Вычисляем координаты коробки на экране при центре в (0, 0)
-        x = (camera_x - self.x) * -1
-        y = (camera_y - self.y) * -1
-        # Рисуем
-        blit_rotate(screen, self.box, (x + width // 2, y + height // 2), (64, 64),
-                    self.direction * -1)
-
 
 if __name__ == '__main__':
-    screen2 = pygame.Surface((600, 600))
+    screen2 = pygame.Surface((1200, 1200))
     map = Maps(screen2)
     map.render_selected_map()
     # Травяной цвет
     # Создаем 10 коробок, чтобы видеть перемещения танка
-    for _ in range(10):
-        all_sprites.add(Box(random.randint(-300, 300), random.randint(-300, 300)))
 
     # Создаем танк игрока
     tank = Tank(0, 0)
@@ -229,13 +209,15 @@ if __name__ == '__main__':
 
     # Основной цикл
     running = True
-    screen.blit(screen2, (0, 0))
+    board = map.getb()
     while running:
         # Проходимся по ивентам
         for event in pygame.event.get():
             # Если окно закрыли, то завершаем цикл
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                board.get_click(event.pos)
 
         # Получаем кнопки, которые нажаты
         keys = pygame.key.get_pressed()
@@ -249,11 +231,11 @@ if __name__ == '__main__':
         if keys[pygame.K_d]:
             tank.turn(1.5)
 
-        # Обновляем камеруwawwwwwwwaw
+        xy = tank.getcoords()
+        map.navigation(screen, xy)
         camera.update()
 
         # Рисуем все что надо
-        map.navigation(screen)
         camera.draw(screen, all_sprites)
 
         # Обновляем экран
