@@ -1,17 +1,26 @@
 import random
 import pygame
-MAP_SIZE = x, y = 1600, 900
+from map_1 import Map_1
+from Test import load_image
+"""# - brick_barrier
+   . - floor
+   X - box"""
+
+MAP_SIZE = width_field, height_field = 1600, 900
 COEF = 50
 MAPS = ['data/map1.txt']
 
 class Maps:
     def __init__(self):
-        self.floor = pygame.Surface((x, y))
-        # self.x = 0
-        #self.y = 0
-        #self.screen = screen
-        #maps = [Map_1(self.screen)]
-        #self.map = random.choice(maps)
+        self.field = pygame.Surface((width_field, height_field))
+        self.width = 10
+        self.height = 10
+        self.cell_size = 100
+       # self.x = 0
+       # self.y = 0
+       # self.screen = screen
+       # maps = [Map_1(self.screen)]
+       # self.map = random.choice(maps)
 
 #
 
@@ -26,13 +35,25 @@ class Maps:
         return self.map
 
     def select_random(self):
-        self.map = random.choice(MAPS)
-        with open(self.map, 'r', encoding='utf-8') as map:
-            self.read_map = map.readlines()
-            self.read_map = [line.strip('\n\r') for line in self.read_map]
+        choiced_map_txt = random.choice(MAPS)
+        with open(choiced_map_txt, 'r', encoding='utf-8') as map:
+            reading_map = map.readlines()
+            self.textures = reading_map[-1].split(';')
+            self.map = [line.strip('\n\r') for line in reading_map[:-1]]
+           # print(reading_map)
+           # print(self.map)
+           # print(self.textures)
+    def generate(self):
+        self.load_textures()
 
 
-
+    def load_textures(self):
+        if 'box.png' in self.textures:
+            self.box = pygame.transform.scale(load_image("box.png"), (100, 100))
+        if 'sandfloor.png' in self.textures:
+            self.sandfloor = pygame.transform.scale(load_image("sandfloor.png"), (80, 100))
+        if 'brick_barrier.png' in self.textures:
+            self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (100, 100))
 
 
 
