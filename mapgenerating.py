@@ -10,6 +10,7 @@ import sys
    , - grassfloor"""
 
 MAPS = ['data/map1.txt', 'data/map2.txt']
+obstacles = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
@@ -30,13 +31,43 @@ def load_image(name, colorkey=None):
         image = image.convert_alpha()
     return image
 
+#class Obj(pygame.sprite.Sprite):
+#    def __init__(self, x, y, image, cell_size):
+#        super().__init__()
+#        obj = pygame.sprite.Sprite(obstacles)
+#        obj.image = image
+#        obj.rect = obj.image.get_rect()
+#        obj.rect.x = x * cell_size
+#        obj.rect.y = y * cell_size
+#
+#    def update1(self):
+#        print(1)
+#        if pygame.sprite.spritecollideany(self, entities):
+#            print('GELLO')
+
 
 class Maps:
     def __init__(self, main_screen):
         self.screen = main_screen
+        self.obj_size = 100
+
+    def create_obj(self, x, y, image):
+        #Obj(x, y, image, self.cell_size)
+        obj = pygame.sprite.Sprite(obstacles)
+        obj.image = image
+        obj.rect = obj.image.get_rect()
+        obj.rect.x = x * self.cell_size
+        obj.rect.y = y * self.cell_size
 
     def update(self, coords):
         self.screen.blit(self.field, (-coords[0], -coords[1]))
+        obstacles.draw(self.field)
+
+    # object1_mask = pygame.mask.from_surface(tank)
+    # object2_mask = pygame.mask.from_surface(self.box)
+    # if object1_mask.collide(object2_mask):
+    #    print(11)
+    ## Оба объекта пересекаются
 
     def load_map_from_txt(self):
         with open(self.choiced_map_txt, 'r', encoding='utf-8') as map:
@@ -52,7 +83,7 @@ class Maps:
         self.load_map_from_txt()
 
     def select(self, number_of_map):
-        count_maps = 2
+        count_maps = len(MAPS)
         if 1 <= number_of_map <= count_maps:
             self.choiced_map_txt = MAPS[number_of_map - 1]
             self.load_map_from_txt()
@@ -70,26 +101,29 @@ class Maps:
 
     def load_textures(self):
         if 'box.png' in self.textures:
-            self.box = pygame.transform.scale(load_image("box.png"), (100, 100))
+            self.box = pygame.transform.scale(load_image("box.png"), (self.obj_size, self.obj_size))
         if 'sandfloor.png' in self.textures:
-            self.sandfloor = pygame.transform.scale(load_image("sandfloor.png"), (100, 100))
+            self.sandfloor = pygame.transform.scale(load_image("sandfloor.png"), (self.obj_size, self.obj_size))
         if 'brick_barrier.png' in self.textures:
-            self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (100, 100))
+            self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (self.obj_size, self.obj_size))
         if 'dark_box.png' in self.textures:
-            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (100, 100))
+            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.obj_size, self.obj_size))
         if 'grassfloor.png' in self.textures:
-            self.grassfloor = pygame.transform.scale(load_image("grassfloor.png"), (100, 100))
+            self.grassfloor = pygame.transform.scale(load_image("grassfloor.png"), (self.obj_size, self.obj_size))
 
     def draw_field(self):
         for x in range(0, self.width_in_tiles):
             for y in range(0, self.height_in_tiles):
                 if self.map[y][x] == '#':
-                    self.field.blit(self.barrier, (x * self.cell_size, y * self.cell_size))
+                    # self.field.blit(sprite, (x * self.cell_size, y * self.cell_size))
+                    self.create_obj(x, y, self.barrier)
                 if self.map[y][x] == 'X':
-                    self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
+                    self.create_obj(x, y, self.box)
+                    # self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '.':
                     self.field.blit(self.sandfloor, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == ',':
                     self.field.blit(self.grassfloor, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == 'D':
-                    self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
+                    self.create_obj(x, y, self.dark_box)
+                    # self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
