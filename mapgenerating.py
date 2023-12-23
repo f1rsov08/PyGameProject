@@ -38,13 +38,24 @@ class Maps:
     def update(self, coords):
         self.screen.blit(self.field, (-coords[0], -coords[1]))
 
+    def load_map_from_txt(self):
+        with open(self.choiced_map_txt, 'r', encoding='utf-8') as map:
+            reading_map = map.readlines()
+            self.textures = reading_map[-1].split(';')
+            self.map = [line.strip('\n\r') for line in reading_map[:-1]]
+            self.width_in_tiles = len(self.map[0])
+            self.height_in_tiles = len(self.map)
+            self.create_size_map()
+
     def select_random(self):
         self.choiced_map_txt = random.choice(MAPS)
+        self.load_map_from_txt()
 
     def select(self, number_of_map):
         count_maps = 2
         if 1 <= number_of_map <= count_maps:
             self.choiced_map_txt = MAPS[number_of_map - 1]
+            self.load_map_from_txt()
         else:
             return 'Введите правильный номер карты'
 
