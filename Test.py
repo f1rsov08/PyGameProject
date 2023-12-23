@@ -186,9 +186,11 @@ class Tank(Entity):
 
 
 if __name__ == '__main__':
-    screen2 = pygame.Surface((1200, 1200))
-    map = Maps(screen2)
-    map.render_selected_map()
+    map = Maps(screen)
+    map.select_random()
+    map.generate()
+    # или можно map.select(номер карты по счету) ---- 1 - песчаная карта, 2 - травяная карта
+    #map.render_selected_map()
     # Травяной цвет
     # Создаем 10 коробок, чтобы видеть перемещения танка
 
@@ -209,15 +211,12 @@ if __name__ == '__main__':
 
     # Основной цикл
     running = True
-    board = map.getb()
     while running:
         # Проходимся по ивентам
         for event in pygame.event.get():
             # Если окно закрыли, то завершаем цикл
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                board.get_click(event.pos)
 
         # Получаем кнопки, которые нажаты
         keys = pygame.key.get_pressed()
@@ -230,9 +229,7 @@ if __name__ == '__main__':
             tank.turn(-1.5)
         if keys[pygame.K_d]:
             tank.turn(1.5)
-
-        xy = tank.getcoords()
-        map.navigation(screen, xy)
+        map.update(tank.getcoords())
         camera.update()
 
         # Рисуем все что надо
