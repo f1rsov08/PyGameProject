@@ -126,6 +126,9 @@ class Tank(Entity):
         self.x += math.cos(math.radians(self.direction)) * self.speed * multiplier
         self.y += math.sin(math.radians(self.direction)) * self.speed * multiplier
 
+    def get_tank_obj(self):
+        return self.image_track
+
     def turn(self, angle):
         '''
         Поворот танка
@@ -187,12 +190,8 @@ class Tank(Entity):
 
 if __name__ == '__main__':
     map = Maps(screen)
-    map.select_random()
+    map.select(2) # или можно map.select(номер карты по счету) ---- 1 - песчаная карта, 2 - травяная карта
     map.generate()
-    # или можно map.select(номер карты по счету) ---- 1 - песчаная карта, 2 - травяная карта
-    #map.render_selected_map()
-    # Травяной цвет
-    # Создаем 10 коробок, чтобы видеть перемещения танка
 
     # Создаем танк игрока
     tank = Tank(0, 0)
