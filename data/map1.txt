@@ -8,3 +8,4 @@
 #...XX...#
 #...XX...#
 ##########
+box.png;sandfloor.png;brick_barrier.png
