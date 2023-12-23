@@ -4,10 +4,12 @@ import os
 import sys
 
 """# - brick_barrier
-   . - floor
-   X - box"""
+   . - sandfloor
+   X - box
+   D - dark_box
+   , - grassfloor"""
 
-MAPS = ['data/map1.txt']
+MAPS = ['data/map1.txt', 'data/map2.txt']
 
 
 def load_image(name, colorkey=None):
@@ -37,14 +39,14 @@ class Maps:
         self.screen.blit(self.field, (-coords[0], -coords[1]))
 
     def select_random(self):
-        choiced_map_txt = random.choice(MAPS)
-        with open(choiced_map_txt, 'r', encoding='utf-8') as map:
-            reading_map = map.readlines()
-            self.textures = reading_map[-1].split(';')
-            self.map = [line.strip('\n\r') for line in reading_map[:-1]]
-            self.width_in_tiles = len(self.map[0])
-            self.height_in_tiles = len(self.map)
-            self.create_size_map()
+        self.choiced_map_txt = random.choice(MAPS)
+
+    def select(self, number_of_map):
+        count_maps = 2
+        if 1 <= number_of_map <= count_maps:
+            self.choiced_map_txt = MAPS[number_of_map - 1]
+        else:
+            return 'Введите правильный номер карты'
 
     def create_size_map(self):
         self.cell_size = 100
@@ -62,6 +64,10 @@ class Maps:
             self.sandfloor = pygame.transform.scale(load_image("sandfloor.png"), (100, 100))
         if 'brick_barrier.png' in self.textures:
             self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (100, 100))
+        if 'dark_box.png' in self.textures:
+            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (100, 100))
+        if 'grassfloor.png' in self.textures:
+            self.grassfloor = pygame.transform.scale(load_image("grassfloor.png"), (100, 100))
 
     def draw_field(self):
         for x in range(0, self.width_in_tiles):
@@ -72,3 +78,7 @@ class Maps:
                     self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '.':
                     self.field.blit(self.sandfloor, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == ',':
+                    self.field.blit(self.grassfloor, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == 'D':
+                    self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
