@@ -1,16 +1,19 @@
 import random
-from map_1 import Map_1
-from main import Entity
-import math
+import pygame
+MAP_SIZE = x, y = 1600, 900
+COEF = 50
+MAPS = ['data/map1.txt']
 
 class Maps:
-    def __init__(self, screen):
-        self.x = 0
-        self.y = 0
-        self.screen = screen
-        maps = [Map_1(self.screen)]
-        self.map = random.choice(maps)
+    def __init__(self):
+        self.floor = pygame.Surface((x, y))
+        # self.x = 0
+        #self.y = 0
+        #self.screen = screen
+        #maps = [Map_1(self.screen)]
+        #self.map = random.choice(maps)
 
+#
 
     def render_selected_map(self):
         self.map.create_board()
@@ -22,9 +25,14 @@ class Maps:
     def getb(self):
         return self.map
 
+    def select_random(self):
+        self.map = random.choice(MAPS)
+        with open(self.map, 'r', encoding='utf-8') as map:
+            self.read_map = map.readlines()
+            self.read_map = [line.strip('\n\r') for line in self.read_map]
 
-class Floor(Entity):
-    pass
+
+
 
 
 
