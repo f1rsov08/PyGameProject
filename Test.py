@@ -3,7 +3,7 @@ import sys
 import math
 import pygame
 import random
-from mapgenerating import Maps
+from mapgenerating import Maps, obstacles
 
 pygame.init()
 size = width, height = 600, 600
@@ -88,7 +88,7 @@ class Entity(pygame.sprite.Sprite):
     '''
 
     def __init__(self, x, y, direction=0, health=100):
-        super().__init__()
+        super().__init__(all_sprites)
         # Положение в пространстве
         self.x, self.y = x, y
         self.direction = direction
@@ -112,6 +112,7 @@ class Tank(Entity):
         # Загрузка изображений
         self.image_track = pygame.transform.scale(load_image("tank_track.png"), (128, 128))
         self.image_turret = pygame.transform.scale(load_image("tank_turret.png"), (128, 128))
+        self.rect = self.image_track.get_rect()
         # Задаем направление башни танка
         self.turret_direction = direction
         # Скорость танка
@@ -190,7 +191,7 @@ class Tank(Entity):
 
 if __name__ == '__main__':
     map = Maps(screen)
-    map.select(2) # или можно map.select(номер карты по счету) ---- 1 - песчаная карта, 2 - травяная карта
+    map.select(1) # или можно map.select(номер карты по счету) ---- 1 - песчаная карта, 2 - травяная карта
     map.generate()
 
     # Создаем танк игрока
@@ -202,6 +203,7 @@ if __name__ == '__main__':
     camera = Camera(0, 0, tank)
 
     # Добавляем танки во группу спрайтов
+
     all_sprites.add(tank)
     all_sprites.add(enemy_tank)
 
@@ -221,14 +223,17 @@ if __name__ == '__main__':
         keys = pygame.key.get_pressed()
         # Управление на WASD
         if keys[pygame.K_w]:
-            tank.move()
+            print((tank.x + 200) // map.obj_size + 1, (tank.y + 200) // map.obj_size + 1, map.map)
+            if map.map[int((tank.y + 200) // map.obj_size + 1)][int((tank.x + 200) // map.obj_size + 1)] == '.':
+                tank.move()
         if keys[pygame.K_s]:
-            tank.move(-1)
+            if map.map[int((tank.y + 200) // map.obj_size + 1)][int((tank.x + 200) // map.obj_size + 1)] == '.':
+                tank.move(-1)
         if keys[pygame.K_a]:
             tank.turn(-1.5)
         if keys[pygame.K_d]:
             tank.turn(1.5)
-        map.update(tank.getcoords())
+        map.update(tank.getcoords(), all_sprites)
         camera.update()
 
         # Рисуем все что надо

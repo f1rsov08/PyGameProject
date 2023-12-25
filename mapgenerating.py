@@ -31,19 +31,14 @@ def load_image(name, colorkey=None):
         image = image.convert_alpha()
     return image
 
-#class Obj(pygame.sprite.Sprite):
-#    def __init__(self, x, y, image, cell_size):
-#        super().__init__()
-#        obj = pygame.sprite.Sprite(obstacles)
-#        obj.image = image
-#        obj.rect = obj.image.get_rect()
-#        obj.rect.x = x * cell_size
-#        obj.rect.y = y * cell_size
-#
-#    def update1(self):
-#        print(1)
-#        if pygame.sprite.spritecollideany(self, entities):
-#            print('GELLO')
+class Obj_obstacle(pygame.sprite.Sprite):
+    def __init__(self, x, y, image, cell_size):
+        super().__init__()
+        obj = pygame.sprite.Sprite(obstacles)
+        obj.image = image
+        obj.rect = obj.image.get_rect()
+        obj.rect.x = x * cell_size
+        obj.rect.y = y * cell_size
 
 
 class Maps:
@@ -52,14 +47,14 @@ class Maps:
         self.obj_size = 100
 
     def create_obj(self, x, y, image):
-        #Obj(x, y, image, self.cell_size)
-        obj = pygame.sprite.Sprite(obstacles)
-        obj.image = image
-        obj.rect = obj.image.get_rect()
-        obj.rect.x = x * self.cell_size
-        obj.rect.y = y * self.cell_size
+        Obj_obstacle(x, y, image, self.cell_size)
+      #obj = pygame.sprite.Sprite(obstacles)
+      #obj.image = image
+      #obj.rect = obj.image.get_rect()
+      #obj.rect.x = x * self.cell_size
+      #obj.rect.y = y * self.cell_size
 
-    def update(self, coords):
+    def update(self, coords, entity):
         self.screen.blit(self.field, (-coords[0], -coords[1]))
         obstacles.draw(self.field)
 
