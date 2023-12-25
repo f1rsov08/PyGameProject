@@ -8,6 +8,7 @@ pygame.init()
 size = width, height = 600, 600
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
+tanks = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
@@ -78,7 +79,7 @@ class Camera:
         Рисование объектов
         '''
         for obj in objs:
-            obj.draw(screen, self.x, self.y)
+            obj.draw(screen, self)
 
 
 class Entity(pygame.sprite.Sprite):
@@ -86,8 +87,8 @@ class Entity(pygame.sprite.Sprite):
     Сущность
     '''
 
-    def __init__(self, x, y, direction=0, health=100):
-        super().__init__()
+    def __init__(self, x, y, direction=0, health=100, *groups):
+        super().__init__(all_sprites, *groups)
         # Положение в пространстве
         self.x, self.y = x, y
         self.direction = direction
@@ -107,7 +108,7 @@ class Tank(Entity):
     '''
 
     def __init__(self, x, y, direction=0, health=100, speed=1.5, ai='player'):
-        super().__init__(x, y, direction, health)
+        super().__init__(x, y, direction, health, tanks)
         # Загрузка изображений
         self.image_track = pygame.transform.scale(load_image("tank_track.png"), (128, 128))
         self.image_turret = pygame.transform.scale(load_image("tank_turret.png"), (128, 128))
@@ -131,17 +132,39 @@ class Tank(Entity):
         '''
         self.direction += angle
 
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen, camera):
         '''
         Рисование танка
         '''
         # Вычисляем координаты танка на экране при центре в (0, 0)
-        x = (camera_x - self.x) * -1
-        y = (camera_y - self.y) * -1
-        # Получаем координаты цели
-        target_x, target_y = self.get_target()
+        x = (camera.x - self.x) * -1
+        y = (camera.y - self.y) * -1
+        # Получаем направление к цели
+        target_angle = self.get_target(camera)
+        # Рисуем
+        blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (64, 64),
+                    self.direction * -1)
+        blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
+                    target_angle * -1)
+
+    def get_target(self, camera=None):
+        '''
+        Получаем цель танка
+        '''
+        if self.ai == 'player':
+            # Если танком управляет игрок, то функция возвращает координаты мыши
+            x, y = pygame.mouse.get_pos()
+            target_x, target_y = x + camera.x - width // 2, y + camera.y - height // 2
+        elif self.ai == 'enemy':
+            # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
+            target_x, target_y = \
+                sorted(filter(lambda sprite: type(sprite) is Tank and sprite.ai == 'player', all_sprites),
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))[0].coords()
+        else:
+            # Если кто-то другой, то 0, 0
+            target_x, target_y = 0, 0
         # Вычисляем координаты цели относительно танка
-        target_x, target_y = target_x - x, target_y - y
+        target_x, target_y = target_x - self.x, target_y - self.y
         try:
             # Пробуем вычислить угол поворота башни танка
             target_angle = math.degrees(math.atan(target_y / target_x))
@@ -157,27 +180,16 @@ class Tank(Entity):
             # А если нам удалось вычислить угол, то поворачиваем его на 180 градусов, если цель с другой стороны
             if target_x < 0:
                 target_angle += 180
-        # Рисуем
-        blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (64, 64),
-                    self.direction * -1)
-        blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
-                    target_angle * -1)
+        return target_angle
 
-    def get_target(self):
-        '''
-        Получаем цель танка
-        '''
-        if self.ai == 'player':
-            # Если танком управляет игрок, то функция возвращает координаты мыши
-            x, y = pygame.mouse.get_pos()
-            return x - width // 2, y - height // 2
-        elif self.ai == 'enemy':
-            # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
-            return sorted(filter(lambda sprite: type(sprite) is Tank and sprite.ai == 'player', all_sprites),
-                          key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))[0].coords()
-        else:
-            # Если кто-то другой, то 0, 0
-            return 0, 0
+    def shoot(self, camera=None):
+        all_sprites.add(Bullet(self.x,
+                               self.y, self.get_target(camera)))
+
+    def update(self):
+        if self.health <= 0:
+            all_sprites.remove(self)
+            tanks.remove(self)
 
 
 class Box(Entity):
@@ -186,19 +198,55 @@ class Box(Entity):
     '''
 
     def __init__(self, x, y, direction=0):
-        super().__init__(x, y, direction, -1)
+        super().__init__(x, y, direction, 25)
         self.box = pygame.transform.scale(load_image("box.png"), (128, 128))
 
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen, camera):
         '''
         Рисование коробки
         '''
         # Вычисляем координаты коробки на экране при центре в (0, 0)
-        x = (camera_x - self.x) * -1
-        y = (camera_y - self.y) * -1
+        x = (camera.x - self.x) * -1
+        y = (camera.y - self.y) * -1
         # Рисуем
         blit_rotate(screen, self.box, (x + width // 2, y + height // 2), (64, 64),
                     self.direction * -1)
+
+    def update(self):
+        if self.health <= 0:
+            all_sprites.remove(self)
+
+
+class Bullet(Entity):
+    '''
+    Снаряд
+    '''
+
+    def __init__(self, x, y, direction=0):
+        super().__init__(x, y, direction, -1)
+        self.bullet = pygame.transform.scale(load_image("bullet.png", (255, 255, 255)), (64, 64))
+        self.distance = 0
+
+    def draw(self, screen, camera):
+        '''
+        Рисование снаряда
+        '''
+        # Вычисляем координаты снаряда на экране при центре в (0, 0)
+        x = (camera.x - self.x) * -1
+        y = (camera.y - self.y) * -1
+        # Рисуем
+        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (32, 32),
+                    self.direction * -1)
+
+    def update(self):
+        '''
+        Перемещение снаряда
+        '''
+        self.x += math.cos(math.radians(self.direction)) * 1.5
+        self.y += math.sin(math.radians(self.direction)) * 1.5
+        self.distance += 1.5
+        if self.distance > 300:
+            all_sprites.remove(self)
 
 
 if __name__ == '__main__':
@@ -209,16 +257,14 @@ if __name__ == '__main__':
         all_sprites.add(Box(random.randint(-300, 300), random.randint(-300, 300)))
 
     # Создаем танк игрока
-    tank = Tank(0, 0)
+    player = Tank(0, 0)
     # Создаем танк врага
     enemy_tank = Tank(40, 40, ai='enemy')
 
     # Создаем камеру
-    camera = Camera(0, 0, tank)
+    camera = Camera(0, 0, player)
 
     # Добавляем танки во группу спрайтов
-    all_sprites.add(tank)
-    all_sprites.add(enemy_tank)
 
     # Часы
     clock = pygame.time.Clock()
@@ -231,20 +277,23 @@ if __name__ == '__main__':
             # Если окно закрыли, то завершаем цикл
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                player.shoot(camera)
 
         # Получаем кнопки, которые нажаты
         keys = pygame.key.get_pressed()
         # Управление на WASD
         if keys[pygame.K_w]:
-            tank.move()
+            player.move()
         if keys[pygame.K_s]:
-            tank.move(-1)
+            player.move(-1)
         if keys[pygame.K_a]:
-            tank.turn(-1.5)
+            player.turn(-1.5)
         if keys[pygame.K_d]:
-            tank.turn(1.5)
+            player.turn(1.5)
 
         # Обновляем камеру
+        all_sprites.update()
         camera.update()
 
         # Рисуем все что надо
