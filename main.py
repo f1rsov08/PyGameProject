@@ -112,6 +112,11 @@ class Tank(Entity):
         # Загрузка изображений
         self.image_track = pygame.transform.scale(load_image("tank_track.png"), (128, 128))
         self.image_turret = pygame.transform.scale(load_image("tank_turret.png"), (128, 128))
+        self.rect = self.image_track.get_rect()
+        self.mask = pygame.mask.from_surface(self.image_track)
+        # Задаем координаты танка
+        self.rect.x = self.x
+        self.rect.y = self.y
         # Задаем направление башни танка
         self.turret_direction = direction
         # Скорость танка
@@ -125,6 +130,8 @@ class Tank(Entity):
         '''
         self.x += math.cos(math.radians(self.direction)) * self.speed * multiplier
         self.y += math.sin(math.radians(self.direction)) * self.speed * multiplier
+        self.rect.x = self.x
+        self.rect.y = self.y
 
     def turn(self, angle):
         '''
@@ -157,9 +164,13 @@ class Tank(Entity):
             target_x, target_y = x + camera.x - width // 2, y + camera.y - height // 2
         elif self.ai == 'enemy':
             # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
-            target_x, target_y = \
+            players = \
                 sorted(filter(lambda sprite: type(sprite) is Tank and sprite.ai == 'player', all_sprites),
-                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))[0].coords()
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
+            if players:
+                target_x, target_y = players[0].coords()
+            else:
+                target_x, target_y = 0, 0
         else:
             # Если кто-то другой, то 0, 0
             target_x, target_y = 0, 0
@@ -188,8 +199,7 @@ class Tank(Entity):
 
     def update(self):
         if self.health <= 0:
-            all_sprites.remove(self)
-            tanks.remove(self)
+            self.kill()
 
 
 class Box(Entity):
@@ -200,6 +210,10 @@ class Box(Entity):
     def __init__(self, x, y, direction=0):
         super().__init__(x, y, direction, 25)
         self.box = pygame.transform.scale(load_image("box.png"), (128, 128))
+        self.rect = self.box.get_rect()
+        self.mask = pygame.mask.from_surface(self.box)
+        self.rect.x = self.x
+        self.rect.y = self.y
 
     def draw(self, screen, camera):
         '''
@@ -214,7 +228,7 @@ class Box(Entity):
 
     def update(self):
         if self.health <= 0:
-            all_sprites.remove(self)
+            self.kill()
 
 
 class Bullet(Entity):
@@ -224,7 +238,11 @@ class Bullet(Entity):
 
     def __init__(self, x, y, direction=0):
         super().__init__(x, y, direction, -1)
-        self.bullet = pygame.transform.scale(load_image("bullet.png", (255, 255, 255)), (64, 64))
+        self.bullet = pygame.transform.scale(load_image("bullet.png"), (128, 128))
+        self.rect = self.bullet.get_rect()
+        self.mask = pygame.mask.from_surface(self.bullet)
+        self.rect.x = self.x
+        self.rect.y = self.y
         self.distance = 0
 
     def draw(self, screen, camera):
@@ -235,31 +253,41 @@ class Bullet(Entity):
         x = (camera.x - self.x) * -1
         y = (camera.y - self.y) * -1
         # Рисуем
-        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (32, 32),
+        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (64, 64),
                     self.direction * -1)
 
     def update(self):
         '''
-        Перемещение снаряда
+        Перемещение снарядаa
         '''
-        self.x += math.cos(math.radians(self.direction)) * 1.5
-        self.y += math.sin(math.radians(self.direction)) * 1.5
-        self.distance += 1.5
-        if self.distance > 300:
-            all_sprites.remove(self)
+        self.x += math.cos(math.radians(self.direction)) * 3
+        self.y += math.sin(math.radians(self.direction)) * 3
+        self.rect.x = self.x
+        self.rect.y = self.y
+        self.distance += 3
+        if self.distance > 600:
+            self.kill()
+        for i in all_sprites:
+            if pygame.sprite.collide_mask(self, i) and i != self and not (type(i) is Tank and i.ai == 'player'):
+                i.health -= 25
+                self.kill()
 
 
 if __name__ == '__main__':
     # Травяной цвет)
     screen.fill((93, 161, 48))
     # Создаем 10 коробок, чтобы видеть перемещения танка
-    for _ in range(10):
-        all_sprites.add(Box(random.randint(-300, 300), random.randint(-300, 300)))
+    for i in range(10):
+        box = Box(random.randint(-300, 300), random.randint(-300, 300))
+        all_sprites.add(box)
+        box.name = f'Коробка {i}'
 
     # Создаем танк игрока
     player = Tank(0, 0)
+    player.name = 'Игрок'
     # Создаем танк врага
     enemy_tank = Tank(40, 40, ai='enemy')
+    enemy_tank.name = 'Враг'
 
     # Создаем камеру
     camera = Camera(0, 0, player)
