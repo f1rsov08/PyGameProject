@@ -45,6 +45,7 @@ class Maps:
     def __init__(self, main_screen):
         self.screen = main_screen
         self.obj_size = 100
+        self.other = 80
 
     def create_obj(self, x, y, image):
         Obj_obstacle(x, y, image, self.cell_size)
@@ -101,15 +102,15 @@ class Maps:
            D - dark_box
            , - grass_ground"""
         if 'X' in self.textures:
-            self.box = pygame.transform.scale(load_image("light_box.png"), (self.obj_size, self.obj_size))
+            self.light_box = pygame.transform.scale(load_image("light_box.png"), (self.other, self.other))
         if '.' in self.textures:
-            self.sandfloor = pygame.transform.scale(load_image("sand_ground.png"), (self.obj_size, self.obj_size))
+            self.sand_ground = pygame.transform.scale(load_image("sand_ground.png"), (self.obj_size, self.obj_size))
         if '#' in self.textures:
             self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (self.obj_size, self.obj_size))
         if 'D' in self.textures:
-            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.obj_size, self.obj_size))
+            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.other, self.other))
         if ',' in self.textures:
-            self.grassfloor = pygame.transform.scale(load_image("grass_ground.png"), (self.obj_size, self.obj_size))
+            self.grass_ground = pygame.transform.scale(load_image("grass_ground.png"), (self.obj_size, self.obj_size))
 
     def draw_field(self):
         for x in range(0, self.width_in_tiles):
@@ -118,12 +119,12 @@ class Maps:
                     # self.field.blit(sprite, (x * self.cell_size, y * self.cell_size))
                     self.create_obj(x, y, self.barrier)
                 if self.map[y][x] == 'X':
-                    self.create_obj(x, y, self.box)
+                    self.create_obj(x, y, self.light_box)
                     # self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '.':
-                    self.field.blit(self.sandfloor, (x * self.cell_size, y * self.cell_size))
+                    self.field.blit(self.sand_ground, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == ',':
-                    self.field.blit(self.grassfloor, (x * self.cell_size, y * self.cell_size))
+                    self.field.blit(self.grass_ground, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == 'D':
                     self.create_obj(x, y, self.dark_box)
                     # self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
