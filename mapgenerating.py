@@ -31,6 +31,7 @@ def load_image(name, colorkey=None):
         image = image.convert_alpha()
     return image
 
+
 class Obj_obstacle(pygame.sprite.Sprite):
     def __init__(self, x, y, image, cell_size):
         super().__init__()
@@ -49,11 +50,12 @@ class Maps:
 
     def create_obj(self, x, y, image):
         Obj_obstacle(x, y, image, self.cell_size)
-      #obj = pygame.sprite.Sprite(obstacles)
-      #obj.image = image
-      #obj.rect = obj.image.get_rect()
-      #obj.rect.x = x * self.cell_size
-      #obj.rect.y = y * self.cell_size
+
+    # obj = pygame.sprite.Sprite(obstacles)
+    # obj.image = image
+    # obj.rect = obj.image.get_rect()
+    # obj.rect.x = x * self.cell_size
+    # obj.rect.y = y * self.cell_size
 
     def update(self, coords, entity):
         self.screen.blit(self.field, (-coords[0], -coords[1]))
@@ -105,7 +107,8 @@ class Maps:
            3 - wood_ground - деревянный пол
            + - stone_wall - каменная стена
            - - sandstone_wall - песчаная стена
-           = -  wood_wall - деревянная стена"""
+           = -  wood_wall - деревянная стена
+           W - bush - кусты"""
         if 'L' in self.textures:
             self.light_box = pygame.transform.scale(load_image("light_box.png"), (self.obj_size, self.obj_size))
         if '0' in self.textures:
@@ -121,7 +124,8 @@ class Maps:
         if '3' in self.textures:
             self.wood_ground = pygame.transform.scale(load_image("wood_ground.png"), (self.obj_size, self.obj_size))
         if '-' in self.textures:
-            self.sandstone_wall = pygame.transform.scale(load_image("sandstone_wall.png"), (self.obj_size, self.obj_size))
+            self.sandstone_wall = pygame.transform.scale(load_image("sandstone_wall.png"),
+                                                         (self.obj_size, self.obj_size))
         if '+' in self.textures:
             self.stone_wall = pygame.transform.scale(load_image("stone_wall.png"), (self.obj_size, self.obj_size))
         if '=' in self.textures:
@@ -136,15 +140,20 @@ class Maps:
                     # self.field.blit(sprite, (x * self.cell_size, y * self.cell_size))
                     self.create_obj(x, y, self.barrier)
                 if self.map[y][x] == 'L':
+                    self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.light_box)
+                if self.map[y][x] == 'W':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.bush)
+                if self.map[y][x] == 'D':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.dark_box)
+                    # self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
                     # self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '0':
                     self.field.blit(self.sand_ground, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '1':
                     self.field.blit(self.grass_ground, (x * self.cell_size, y * self.cell_size))
-                if self.map[y][x] == 'D':
-                    self.create_obj(x, y, self.dark_box)
-                    # self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '2':
                     self.create_obj(x, y, self.stone_ground)
                 if self.map[y][x] == '3':
@@ -155,5 +164,11 @@ class Maps:
                     self.create_obj(x, y, self.sandstone_wall)
                 if self.map[y][x] == '=':
                     self.create_obj(x, y, self.wood_wall)
-                if self.map[y][x] == 'W':
-                    self.create_obj(x, y, self.bush)
+
+
+    def fill_ground_png(self, x, y):
+        list_of_number_plates = sorted([(self.textures.count('0'), self.sand_ground),
+                                        (self.textures.count('1'), self.grass_ground),
+                                        (self.textures.count('2'), self.stone_ground),
+                                        (self.textures.count('3'), self.wood_ground)], key=lambda x: x[0])
+        self.create_obj(x, y, list_of_number_plates[-1][1])
