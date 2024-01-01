@@ -96,13 +96,16 @@ class Maps:
         self.draw_field()
 
     def load_textures(self):
-        """# - brick_barrier
-           0 - sand_ground
-           L - light_box
-           D - dark_box
-           1 - grass_ground
-           2 - stone_ground
-           3 - wood_ground"""
+        """# - brick_barrier - барьерная стена
+           0 - sand_ground - песочный пол
+           L - light_box - светлая коробка
+           D - dark_box - темная коробка
+           1 - grass_ground - травянистый пол
+           2 - stone_ground - каменный пол
+           3 - wood_ground - деревянный пол
+           + - stone_wall - каменная стена
+           - - sandstone_wall - песчаная стена
+           = -  wood_wall - деревянная стена"""
         if 'L' in self.textures:
             self.light_box = pygame.transform.scale(load_image("light_box.png"), (self.obj_size, self.obj_size))
         if '0' in self.textures:
@@ -117,6 +120,14 @@ class Maps:
             self.stone_ground = pygame.transform.scale(load_image("stone_ground.png"), (self.obj_size, self.obj_size))
         if '3' in self.textures:
             self.wood_ground = pygame.transform.scale(load_image("wood_ground.png"), (self.obj_size, self.obj_size))
+        if '-' in self.textures:
+            self.sandstone_wall = pygame.transform.scale(load_image("sandstone_wall.png"), (self.obj_size, self.obj_size))
+        if '+' in self.textures:
+            self.stone_wall = pygame.transform.scale(load_image("stone_wall.png"), (self.obj_size, self.obj_size))
+        if '=' in self.textures:
+            self.wood_wall = pygame.transform.scale(load_image("wood_wall.png"), (self.obj_size, self.obj_size))
+        if 'W' in self.textures:
+            self.bush = pygame.transform.scale(load_image("bush.png"), (self.obj_size, self.obj_size))
 
     def draw_field(self):
         for x in range(0, self.width_in_tiles):
@@ -138,3 +149,11 @@ class Maps:
                     self.create_obj(x, y, self.stone_ground)
                 if self.map[y][x] == '3':
                     self.create_obj(x, y, self.wood_ground)
+                if self.map[y][x] == '+':
+                    self.create_obj(x, y, self.stone_wall)
+                if self.map[y][x] == '-':
+                    self.create_obj(x, y, self.sandstone_wall)
+                if self.map[y][x] == '=':
+                    self.create_obj(x, y, self.wood_wall)
+                if self.map[y][x] == 'W':
+                    self.create_obj(x, y, self.bush)
