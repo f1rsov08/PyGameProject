@@ -190,9 +190,9 @@ class Tank(Entity):
 
 
 if __name__ == '__main__':
-    map = Maps(screen)
-    map.select(1) # или можно map.select(номер карты по счету) ---- 1 - песчаная карта, 2 - травяная карта
-    map.generate()
+    map = Maps(screen) #передается главный экран где будут отображаться все объекты
+    map.select(1) #это для выбора карты или можно map.select(номер карты по счету) ---- 1 - песчаная карта, 2 - травяная карта
+    map.generate() #для создания мапы
 
     # Создаем танк игрока
     tank = Tank(0, 0)
@@ -223,12 +223,12 @@ if __name__ == '__main__':
         keys = pygame.key.get_pressed()
         # Управление на WASD
         if keys[pygame.K_w]:
-            print((tank.x + 200) // map.obj_size + 1, (tank.y + 200) // map.obj_size + 1, map.map)
-            if map.map[int((tank.y + 200) // map.obj_size + 1)][int((tank.x + 200) // map.obj_size + 1)] == '.':
-                tank.move()
+            #print((tank.x + 200) // map.obj_size + 1, (tank.y + 200) // map.obj_size + 1, map.map)
+            #if map.map[int((tank.y + 200) // map.obj_size + 1)][int((tank.x + 200) // map.obj_size + 1)] == '.':
+            tank.move()
         if keys[pygame.K_s]:
-            if map.map[int((tank.y + 200) // map.obj_size + 1)][int((tank.x + 200) // map.obj_size + 1)] == '.':
-                tank.move(-1)
+            #if map.map[int((tank.y + 200) // map.obj_size + 1)][int((tank.x + 200) // map.obj_size + 1)] == '.':
+            tank.move(-1)
         if keys[pygame.K_a]:
             tank.turn(-1.5)
         if keys[pygame.K_d]:

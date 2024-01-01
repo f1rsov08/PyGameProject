@@ -25,7 +25,7 @@ class Map_1:
     def __init__(self, screen):
         self.screen = screen
         self.barrier = pygame.transform.scale(load_image("barrier.png"), (80, 80))
-        self.box= pygame.transform.scale(load_image("box.png"), (80, 80))
+        self.box= pygame.transform.scale(load_image("light_box.png"), (80, 80))
 
     def render(self):
         pass

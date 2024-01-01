@@ -14,7 +14,7 @@ screen = pygame.display.set_mode([screen_width, screen_height])
 alien_list = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 
-Alien = "data/box.png"
+Alien = "data/light_box.png"
 Player = "data/tank_track.png"
 
 CameraX = 0

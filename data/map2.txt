@@ -18,4 +18,3 @@
 #,,,,,,,,,,,,,,,,,,#
 #,,,,,,,,,,,,,,,,,,#
 ####################
-dark_box.png;grassfloor.png;brick_barrier.png

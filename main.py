@@ -187,7 +187,7 @@ class Box(Entity):
 
     def __init__(self, x, y, direction=0):
         super().__init__(x, y, direction, -1)
-        self.box = pygame.transform.scale(load_image("box.png"), (128, 128))
+        self.box = pygame.transform.scale(load_image("light_box.png"), (128, 128))
 
     def draw(self, screen, camera_x, camera_y):
         '''
