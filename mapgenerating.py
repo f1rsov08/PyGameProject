@@ -46,7 +46,7 @@ class Maps:
     def __init__(self, main_screen):
         self.screen = main_screen
         self.obj_size = 100
-        self.other = 80
+        self.smaller_size = 80
 
     def create_obj(self, x, y, image):
         Obj_obstacle(x, y, image, self.cell_size)
@@ -110,13 +110,13 @@ class Maps:
            = -  wood_wall - деревянная стена
            W - bush - кусты"""
         if 'L' in self.textures:
-            self.light_box = pygame.transform.scale(load_image("light_box.png"), (self.obj_size, self.obj_size))
+            self.light_box = pygame.transform.scale(load_image("light_box.png"), (self.smaller_size, self.smaller_size))
         if '0' in self.textures:
             self.sand_ground = pygame.transform.scale(load_image("sand_ground.png"), (self.obj_size, self.obj_size))
         if '#' in self.textures:
             self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (self.obj_size, self.obj_size))
         if 'D' in self.textures:
-            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.obj_size, self.obj_size))
+            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.smaller_size, self.smaller_size))
         if '1' in self.textures:
             self.grass_ground = pygame.transform.scale(load_image("grass_ground.png"), (self.obj_size, self.obj_size))
         if '2' in self.textures:
