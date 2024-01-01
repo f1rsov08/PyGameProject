@@ -67,8 +67,8 @@ class Maps:
     def load_map_from_txt(self):
         with open(self.choiced_map_txt, 'r', encoding='utf-8') as map:
             reading_map = map.readlines()
-            self.textures = reading_map[-1].split(';')
-            self.map = [line.strip('\n\r') for line in reading_map[:-1]]
+            self.map = [line.strip('\n\r') for line in reading_map]
+            self.textures = ''.join(self.map)
             self.width_in_tiles = len(self.map[0])
             self.height_in_tiles = len(self.map)
             self.create_size_map()
@@ -95,16 +95,21 @@ class Maps:
         self.draw_field()
 
     def load_textures(self):
-        if 'box.png' in self.textures:
-            self.box = pygame.transform.scale(load_image("box.png"), (self.obj_size, self.obj_size))
-        if 'sandfloor.png' in self.textures:
-            self.sandfloor = pygame.transform.scale(load_image("sandfloor.png"), (self.obj_size, self.obj_size))
-        if 'brick_barrier.png' in self.textures:
+        """# - brick_barrier
+           . - sand_ground
+           X - light_box
+           D - dark_box
+           , - grass_ground"""
+        if 'X' in self.textures:
+            self.box = pygame.transform.scale(load_image("light_box.png"), (self.obj_size, self.obj_size))
+        if '.' in self.textures:
+            self.sandfloor = pygame.transform.scale(load_image("sand_ground.png"), (self.obj_size, self.obj_size))
+        if '#' in self.textures:
             self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (self.obj_size, self.obj_size))
-        if 'dark_box.png' in self.textures:
+        if 'D' in self.textures:
             self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.obj_size, self.obj_size))
-        if 'grassfloor.png' in self.textures:
-            self.grassfloor = pygame.transform.scale(load_image("grassfloor.png"), (self.obj_size, self.obj_size))
+        if ',' in self.textures:
+            self.grassfloor = pygame.transform.scale(load_image("grass_ground.png"), (self.obj_size, self.obj_size))
 
     def draw_field(self):
         for x in range(0, self.width_in_tiles):
