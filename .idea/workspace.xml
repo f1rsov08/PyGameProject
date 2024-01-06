@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Тестовая версия класса Maps">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Слияние">
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -57,6 +56,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Users/admin/PycharmProjects/PyGameProject/data/images",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PythonContentEntriesConfigurable"
   }
@@ -384,6 +384,7 @@
     <MESSAGE value="Систематизация методов" />
     <MESSAGE value="Тестовая версия класса Maps" />
     <MESSAGE value="Перенес в папку images" />
-    <option name="LAST_COMMIT_MESSAGE" value="Перенес в папку images" />
+    <MESSAGE value="Слияние" />
+    <option name="LAST_COMMIT_MESSAGE" value="Слияние" />
   </component>
 </project>
