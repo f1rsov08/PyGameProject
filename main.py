@@ -287,27 +287,24 @@ class Bullet(Entity):
                 self.kill()
 
 class Maps:
+
+    """КЛАСС КАРТ"""
+
     def __init__(self, main_screen):
         self.screen = main_screen
         self.obj_size = 100
 
+    """создание объектов на карте"""
+
     def create_obj(self, x, y, image, can_break):
         Obstacle(x, y, image, self.cell_size, can_break)
 
-    # obj = pygame.sprite.Sprite(obstacles)
-    # obj.image = image
-    # obj.rect = obj.image.get_rect()
-    # obj.rect.x = x * self.cell_size
-    # obj.rect.y = y * self.cell_size
+    """обновление карты"""
 
     def update(self, coords):
         self.screen.blit(self.field, (-coords[0], -coords[1]))
 
-    # object1_mask = pygame.mask.from_surface(tank)
-    # object2_mask = pygame.mask.from_surface(self.box)
-    # if object1_mask.collide(object2_mask):
-    #    print(11)
-    ## Оба объекта пересекаются
+    """загрузка карты из txt формата"""
 
     def load_map_from_txt(self):
         with open(self.choiced_map_txt, 'r', encoding='utf-8') as map:
@@ -318,9 +315,13 @@ class Maps:
             self.height_in_tiles = len(self.map)
             self.create_size_map()
 
+    """выбор карты на рандом"""
+
     def select_random(self):
         self.choiced_map_txt = random.choice(MAPS)
         self.load_map_from_txt()
+
+    """выбор карты"""
 
     def select(self, number_of_map):
         count_maps = len(MAPS)
@@ -330,14 +331,20 @@ class Maps:
         else:
             return 'Введите правильный номер карты'
 
+    """создание размеров карты"""
+
     def create_size_map(self):
         self.cell_size = 100
         width_field, height_field = self.cell_size * self.width_in_tiles, self.cell_size * self.height_in_tiles
         self.field = pygame.Surface((width_field, height_field))
 
+    """генерация или создание карты"""
+
     def generate(self):
         self.load_textures()
         self.draw_field()
+
+    """загрузка текстур"""
 
 
     def load_textures(self):
@@ -376,6 +383,8 @@ class Maps:
         if 'W' in self.textures:
             self.bush = pygame.transform.scale(load_image("bush.png"), (self.obj_size, self.obj_size))
 
+    """рисование поля"""
+
     def draw_field(self):
         for x in range(0, self.width_in_tiles):
             for y in range(0, self.height_in_tiles):
@@ -411,6 +420,7 @@ class Maps:
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.wood_wall, 1)
 
+    """Для заполения пола у ломающихся и не полностью заполненных объектов"""
 
     def fill_ground_png(self, x, y):
         list_of_number_plates = sorted([(self.textures.count('0'), self.sand_ground),
@@ -421,8 +431,11 @@ class Maps:
 
 
 if __name__ == '__main__':
+    # передается главный экран где будут отображаться все объекты
     map = Maps(screen)
+    # это для выбора карты или можно map.selectrandom()
     map.select(1)
+    # для создания карты
     map.generate()
 
     # Травяной цвет)
@@ -479,6 +492,7 @@ if __name__ == '__main__':
 
         # Обновляем камеру
         all_sprites.update()
+        #Обновление карты
         map.update(player.getcoords())
         camera.update()
 
