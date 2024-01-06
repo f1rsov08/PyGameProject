@@ -1,99 +1,190 @@
-import pygame, random, sys
-from pygame.locals import *
+import random
+import pygame
+import os
+import sys
 
-pygame.init()
+"""# - brick_barrier
+   . - sandfloor
+   X - box
+   D - dark_box
+   , - grassfloor"""
 
-black = (0, 0, 0)
-white = (255, 255, 255)
-red = (255, 0, 0)
-
-screen_width = 1080
-screen_height = 720
-screen = pygame.display.set_mode([screen_width, screen_height])
-
-alien_list = pygame.sprite.Group()
-all_sprites = pygame.sprite.Group()
-
-Alien = "data/light_box.png"
-Player = "data/tank_track.png"
-
-CameraX = 0
-CameraY = 0
+MAPS = ['data/map1.txt', 'data/map2.txt']
+obstacles = pygame.sprite.Group()
 
 
-def main():
-    class Enemy(pygame.sprite.Sprite):
+def load_image(name, colorkey=None):
+    '''
+    Функция для загрузки изображений
+    '''
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
 
-        def __init__(self, image):
-            pygame.sprite.Sprite.__init__(self)
 
-            self.image = pygame.image.load(image).convert_alpha()
-            self.rect = self.image.get_rect()
 
-        def create(self):
-            for i in range(50):
-                alien = Enemy(Alien)
 
-                alien.rect.x = random.randrange(screen_width - 50 - CameraX)
-                alien.rect.y = random.randrange(screen_height - 50 - CameraY)
+class Obj_obstacle(pygame.sprite.Sprite):
+    def __init__(self, x, y, image, cell_size):
+        super().__init__(obstacles)
+        self.image = image
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect()
+        self.rect.x = x * cell_size
+        self.rect.y = y * cell_size
 
-                alien_list.add(alien)
-                all_sprites.add(alien)
 
-    player = Enemy(Player)
-    all_sprites.add(player)
+    def update(self, entity, coords):
+        self.rect.x = coords[0]
+        self.rect.y = coords[1]
+       # if pygame.sprite.groupcollide(entity, obstacles, dokilla=False, dokillb=False):
+         #   pass
+            #print(1, 1, 1, (self.rect.x, self.rect.y), (coords[0], coords[1]))
+       #     print('collision detected')
+        #print((int(coords[0]), int(coords[1])), (self.rect.x, self.rect.y))
 
-    done = False
 
-    clock = pygame.time.Clock()
 
-    score = 0
 
-    moveCameraX = 0
-    moveCameraY = 0
+class Maps:
+    def __init__(self, main_screen):
+        self.screen = main_screen
+        self.obj_size = 100
 
-    player.rect.x = 476
-    player.rect.y = 296
+    def create_obj(self, x, y, image):
+        Obj_obstacle(x, y, image, self.cell_size)
 
-    Enemy.create()
+    # obj = pygame.sprite.Sprite(obstacles)
+    # obj.image = image
+    # obj.rect = obj.image.get_rect()
+    # obj.rect.x = x * self.cell_size
+    # obj.rect.y = y * self.cell_size
 
-    while done == False:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
+    def update(self, coords, entity):
+        obstacles.update(entity, coords)
+       # self.screen.blit(self.field, (-coords[0], -coords[1]))
+        pass
 
-        if event.type == KEYDOWN:
-            if event.key == K_w:
-                moveCameraY = -10
-            if event.key == K_s:
-                moveCameraY = 10
-            if event.key == K_a:
-                moveCameraX = -10
-            if event.key == K_d:
-                moveCameraX = 10
+    # object1_mask = pygame.mask.from_surface(tank)
+    # object2_mask = pygame.mask.from_surface(self.box)
+    # if object1_mask.collide(object2_mask):
+    #    print(11)
+    ## Оба объекта пересекаются
 
-        if event.type == KEYUP:
-            if event.key == K_w:
-                moveCameraY = 0
-            if event.key == K_s:
-                moveCameraY = 0
-            if event.key == K_a:
-                moveCameraX = 0
-            if event.key == K_d:
-                moveCameraX = 0
+    def load_map_from_txt(self):
+        with open(self.choiced_map_txt, 'r', encoding='utf-8') as map:
+            reading_map = map.readlines()
+            self.map = [line.strip('\n\r') for line in reading_map]
+            self.textures = ''.join(self.map)
+            self.width_in_tiles = len(self.map[0])
+            self.height_in_tiles = len(self.map)
+            self.create_size_map()
 
-        screen.fill(white)
+    def select_random(self):
+        self.choiced_map_txt = random.choice(MAPS)
+        self.load_map_from_txt()
 
-        enemys_hit = pygame.sprite.spritecollide(player, alien_list, True)
+    def select(self, number_of_map):
+        count_maps = len(MAPS)
+        if 1 <= number_of_map <= count_maps:
+            self.choiced_map_txt = MAPS[number_of_map - 1]
+            self.load_map_from_txt()
+        else:
+            return 'Введите правильный номер карты'
 
-        for enemy in enemys_hit:
-            score += 1
-            print(score)
+    def create_size_map(self):
+        self.cell_size = 100
+        width_field, height_field = self.cell_size * self.width_in_tiles, self.cell_size * self.height_in_tiles
+        self.field = pygame.Surface((width_field, height_field))
 
-        all_sprites.draw(screen)
+    def generate(self):
+        self.load_textures()
+        self.draw_field()
+        self.screen.blit(self.field, (0, 0))
+        obstacles.draw(self.screen)
 
-        clock.tick(40)
+    def load_textures(self):
+        """# - brick_barrier - барьерная стена
+           0 - sand_ground - песочный пол
+           L - light_box - светлая коробка
+           D - dark_box - темная коробка
+           1 - grass_ground - травянистый пол
+           2 - stone_ground - каменный пол
+           3 - wood_ground - деревянный пол
+           + - stone_wall - каменная стена
+           - - sandstone_wall - песчаная стена
+           = -  wood_wall - деревянная стена
+           W - bush - кусты"""
+        if 'L' in self.textures:
+            self.light_box = pygame.transform.scale(load_image("light_box.png"), (self.obj_size, self.obj_size))
+        if '0' in self.textures:
+            self.sand_ground = pygame.transform.scale(load_image("sand_ground.png"), (self.obj_size, self.obj_size))
+        if '#' in self.textures:
+            self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (self.obj_size, self.obj_size))
+        if 'D' in self.textures:
+            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.obj_size, self.obj_size))
+        if '1' in self.textures:
+            self.grass_ground = pygame.transform.scale(load_image("grass_ground.png"), (self.obj_size, self.obj_size))
+        if '2' in self.textures:
+            self.stone_ground = pygame.transform.scale(load_image("stone_ground.png"), (self.obj_size, self.obj_size))
+        if '3' in self.textures:
+            self.wood_ground = pygame.transform.scale(load_image("wood_ground.png"), (self.obj_size, self.obj_size))
+        if '-' in self.textures:
+            self.sandstone_wall = pygame.transform.scale(load_image("sandstone_wall.png"),
+                                                         (self.obj_size, self.obj_size))
+        if '+' in self.textures:
+            self.stone_wall = pygame.transform.scale(load_image("stone_wall.png"), (self.obj_size, self.obj_size))
+        if '=' in self.textures:
+            self.wood_wall = pygame.transform.scale(load_image("wood_wall.png"), (self.obj_size, self.obj_size))
+        if 'W' in self.textures:
+            self.bush = pygame.transform.scale(load_image("bush.png"), (self.obj_size, self.obj_size))
 
-        pygame.display.flip()
+    def draw_field(self):
+        for x in range(0, self.width_in_tiles):
+            for y in range(0, self.height_in_tiles):
+                if self.map[y][x] == '#':
+                    # self.field.blit(sprite, (x * self.cell_size, y * self.cell_size))
+                    self.create_obj(x, y, self.barrier)
+                if self.map[y][x] == 'L':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.light_box)
+                if self.map[y][x] == 'W':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.bush)
+                if self.map[y][x] == 'D':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.dark_box)
+                    # self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
+                    # self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '0':
+                    self.field.blit(self.sand_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '1':
+                    self.field.blit(self.grass_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '2':
+                    self.field.blit(self.stone_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '3':
+                    self.field.blit(self.wood_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '+':
+                    self.create_obj(x, y, self.stone_wall)
+                if self.map[y][x] == '-':
+                    self.create_obj(x, y, self.sandstone_wall)
+                if self.map[y][x] == '=':
+                    self.create_obj(x, y, self.wood_wall)
 
-    pygame.quit()
+
+    def fill_ground_png(self, x, y):
+        list_of_number_plates = sorted([(self.textures.count('0'), self.sand_ground),
+                                        (self.textures.count('1'), self.grass_ground),
+                                        (self.textures.count('2'), self.stone_ground),
+                                        (self.textures.count('3'), self.wood_ground)], key=lambda x: x[0])
+        self.create_obj(x, y, list_of_number_plates[-1][1])
