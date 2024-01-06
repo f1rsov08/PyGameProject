@@ -6,6 +6,7 @@ import random
 
 pygame.init()
 size = width, height = 600, 600
+MAPS = ['data/map1.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
