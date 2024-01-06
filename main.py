@@ -126,6 +126,9 @@ class Tank(Entity):
         # ИИ
         self.ai = ai
 
+    def getcoords(self):
+        return (self.x, self.y)
+
     def move(self, multiplier=1):
         '''
         Перемещение танка
