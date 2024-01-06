@@ -204,33 +204,42 @@ class Tank(Entity):
             self.kill()
 
 
-class Box(Entity):
+class Obstacle(Entity):
     '''
-    Коробка
+    Препятсвтие
     '''
 
-    def __init__(self, x, y, direction=0):
-        super().__init__(x, y, direction, 25)
-        self.box = pygame.transform.scale(load_image("box.png"), (128, 128))
-        self.rect = self.box.get_rect()
-        self.mask = pygame.mask.from_surface(self.box)
-        self.rect.x = self.x
-        self.rect.y = self.y
+    def __init__(self, x, y, image, cell, can_break=0, direction=0):
+        super().__init__(x, y, direction, 25, obstacles)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = x * cell -236
+        self.rect.y = y * cell-236
+        self.can_break = can_break
 
     def draw(self, screen, camera):
         '''
         Рисование коробки
         '''
         # Вычисляем координаты коробки на экране при центре в (0, 0)
-        x = (camera.x - self.x) * -1
-        y = (camera.y - self.y) * -1
+        x = (camera.x - self.rect.x) * -1
+        y = (camera.y - self.rect.y) * -1
         # Рисуем
-        blit_rotate(screen, self.box, (x + width // 2, y + height // 2), (64, 64),
+        blit_rotate(screen, self.image, (x + width // 2, y + height // 2), (64, 64),
                     self.direction * -1)
 
+    moving_coef = 1
+
     def update(self):
-        if self.health <= 0:
-            self.kill()
+        if self.can_break:
+            if self.health <= 0:
+                self.kill()
+        if not self.can_break:
+            if self.health <= 0:
+                pass
+        if pygame.sprite.collide_mask(player, self):
+            Obstacle.moving_coef = 0
 
 
 class Bullet(Entity):
