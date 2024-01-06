@@ -473,6 +473,7 @@ if __name__ == '__main__':
 
         # Обновляем камеру
         all_sprites.update()
+        map.update(player.getcoords())
         camera.update()
 
         # Рисуем все что надо
