@@ -476,7 +476,6 @@ if __name__ == '__main__':
         camera.update()
 
         # Рисуем все что надо
-        screen.fill((93, 161, 48))
         camera.draw(screen, all_sprites)
 
         # Обновляем экран
