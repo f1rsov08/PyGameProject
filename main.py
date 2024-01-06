@@ -6,9 +6,11 @@ import random
 
 pygame.init()
 size = width, height = 600, 600
+MAPS = ['data/map1.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
+obstacles = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
@@ -124,6 +126,9 @@ class Tank(Entity):
         # ИИ
         self.ai = ai
 
+    def getcoords(self):
+        return (self.x, self.y)
+
     def move(self, multiplier=1):
         '''
         Перемещение танка
@@ -202,33 +207,42 @@ class Tank(Entity):
             self.kill()
 
 
-class Box(Entity):
+class Obstacle(Entity):
     '''
-    Коробка
+    Препятсвтие
     '''
 
-    def __init__(self, x, y, direction=0):
-        super().__init__(x, y, direction, 25)
-        self.box = pygame.transform.scale(load_image("box.png"), (128, 128))
-        self.rect = self.box.get_rect()
-        self.mask = pygame.mask.from_surface(self.box)
-        self.rect.x = self.x
-        self.rect.y = self.y
+    def __init__(self, x, y, image, cell, can_break=0, direction=0):
+        super().__init__(x, y, direction, 25, obstacles)
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = x * cell -236
+        self.rect.y = y * cell-236
+        self.can_break = can_break
 
     def draw(self, screen, camera):
         '''
         Рисование коробки
         '''
         # Вычисляем координаты коробки на экране при центре в (0, 0)
-        x = (camera.x - self.x) * -1
-        y = (camera.y - self.y) * -1
+        x = (camera.x - self.rect.x) * -1
+        y = (camera.y - self.rect.y) * -1
         # Рисуем
-        blit_rotate(screen, self.box, (x + width // 2, y + height // 2), (64, 64),
+        blit_rotate(screen, self.image, (x + width // 2, y + height // 2), (64, 64),
                     self.direction * -1)
 
+    moving_coef = 1
+
     def update(self):
-        if self.health <= 0:
-            self.kill()
+        if self.can_break:
+            if self.health <= 0:
+                self.kill()
+        if not self.can_break:
+            if self.health <= 0:
+                pass
+        if pygame.sprite.collide_mask(player, self):
+            Obstacle.moving_coef = 0
 
 
 class Bullet(Entity):
@@ -272,15 +286,165 @@ class Bullet(Entity):
                 i.health -= 25
                 self.kill()
 
+class Maps:
+
+    """КЛАСС КАРТ"""
+
+    def __init__(self, main_screen):
+        self.screen = main_screen
+        self.obj_size = 100
+
+    """создание объектов на карте"""
+
+    def create_obj(self, x, y, image, can_break):
+        Obstacle(x, y, image, self.cell_size, can_break)
+
+    """обновление карты"""
+
+    def update(self, coords):
+        self.screen.blit(self.field, (-coords[0], -coords[1]))
+
+    """загрузка карты из txt формата"""
+
+    def load_map_from_txt(self):
+        with open(self.choiced_map_txt, 'r', encoding='utf-8') as map:
+            reading_map = map.readlines()
+            self.map = [line.strip('\n\r') for line in reading_map]
+            self.textures = ''.join(self.map)
+            self.width_in_tiles = len(self.map[0])
+            self.height_in_tiles = len(self.map)
+            self.create_size_map()
+
+    """выбор карты на рандом"""
+
+    def select_random(self):
+        self.choiced_map_txt = random.choice(MAPS)
+        self.load_map_from_txt()
+
+    """выбор карты"""
+
+    def select(self, number_of_map):
+        count_maps = len(MAPS)
+        if 1 <= number_of_map <= count_maps:
+            self.choiced_map_txt = MAPS[number_of_map - 1]
+            self.load_map_from_txt()
+        else:
+            return 'Введите правильный номер карты'
+
+    """создание размеров карты"""
+
+    def create_size_map(self):
+        self.cell_size = 100
+        width_field, height_field = self.cell_size * self.width_in_tiles, self.cell_size * self.height_in_tiles
+        self.field = pygame.Surface((width_field, height_field))
+
+    """генерация или создание карты"""
+
+    def generate(self):
+        self.load_textures()
+        self.draw_field()
+
+    """загрузка текстур"""
+
+
+    def load_textures(self):
+        """# - brick_barrier - барьерная стена
+           0 - sand_ground - песочный пол
+           L - light_box - светлая коробка
+           D - dark_box - темная коробка
+           1 - grass_ground - травянистый пол
+           2 - stone_ground - каменный пол
+           3 - wood_ground - деревянный пол
+           + - stone_wall - каменная стена
+           - - sandstone_wall - песчаная стена
+           = -  wood_wall - деревянная стена
+           W - bush - кусты"""
+        if 'L' in self.textures:
+            self.light_box = pygame.transform.scale(load_image("light_box.png"), (self.obj_size, self.obj_size))
+        if '0' in self.textures:
+            self.sand_ground = pygame.transform.scale(load_image("sand_ground.png"), (self.obj_size, self.obj_size))
+        if '#' in self.textures:
+            self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (self.obj_size, self.obj_size))
+        if 'D' in self.textures:
+            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.obj_size, self.obj_size))
+        if '1' in self.textures:
+            self.grass_ground = pygame.transform.scale(load_image("grass_ground.png"), (self.obj_size, self.obj_size))
+        if '2' in self.textures:
+            self.stone_ground = pygame.transform.scale(load_image("stone_ground.png"), (self.obj_size, self.obj_size))
+        if '3' in self.textures:
+            self.wood_ground = pygame.transform.scale(load_image("wood_ground.png"), (self.obj_size, self.obj_size))
+        if '-' in self.textures:
+            self.sandstone_wall = pygame.transform.scale(load_image("sandstone_wall.png"),
+                                                         (self.obj_size, self.obj_size))
+        if '+' in self.textures:
+            self.stone_wall = pygame.transform.scale(load_image("stone_wall.png"), (self.obj_size, self.obj_size))
+        if '=' in self.textures:
+            self.wood_wall = pygame.transform.scale(load_image("wood_wall.png"), (self.obj_size, self.obj_size))
+        if 'W' in self.textures:
+            self.bush = pygame.transform.scale(load_image("bush.png"), (self.obj_size, self.obj_size))
+
+    """рисование поля"""
+
+    def draw_field(self):
+        for x in range(0, self.width_in_tiles):
+            for y in range(0, self.height_in_tiles):
+                if self.map[y][x] == '#':
+                    # self.field.blit(sprite, (x * self.cell_size, y * self.cell_size))
+                    self.create_obj(x, y, self.barrier, 0)
+                if self.map[y][x] == 'L':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.light_box, 1)
+                if self.map[y][x] == 'W':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.bush, 0)
+                if self.map[y][x] == 'D':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.dark_box, 1)
+                    # self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
+                    # self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '0':
+                    self.field.blit(self.sand_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '1':
+                    self.field.blit(self.grass_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '2':
+                    self.field.blit(self.stone_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '3':
+                    self.field.blit(self.wood_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '+':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.stone_wall, 0)
+                if self.map[y][x] == '-':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.sandstone_wall, 0)
+                if self.map[y][x] == '=':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.wood_wall, 1)
+
+    """Для заполения пола у ломающихся и не полностью заполненных объектов"""
+
+    def fill_ground_png(self, x, y):
+        list_of_number_plates = sorted([(self.textures.count('0'), self.sand_ground),
+                                        (self.textures.count('1'), self.grass_ground),
+                                        (self.textures.count('2'), self.stone_ground),
+                                        (self.textures.count('3'), self.wood_ground)], key=lambda x: x[0])
+        self.field.blit(list_of_number_plates[-1][1], (x * self.cell_size, y * self.cell_size))
+
 
 if __name__ == '__main__':
+    # передается главный экран где будут отображаться все объекты
+    map = Maps(screen)
+    # это для выбора карты или можно map.selectrandom()
+    map.select(1)
+    # для создания карты
+    map.generate()
+
     # Травяной цвет)
-    screen.fill((93, 161, 48))
+    #screen.fill((93, 161, 48))
     # Создаем 10 коробок, чтобы видеть перемещения танка
-    for i in range(10):
-        box = Box(random.randint(-300, 300), random.randint(-300, 300))
-        all_sprites.add(box)
-        box.name = f'Коробка {i}'
+    #for i in range(10):
+    #    box = Box(random.randint(-300, 300), random.randint(-300, 300))
+    #    all_sprites.add(box)
+    #    box.name = f'Коробка {i}'
 
     # Создаем танк игрока
     player = Tank(0, 0)
@@ -312,9 +476,15 @@ if __name__ == '__main__':
         keys = pygame.key.get_pressed()
         # Управление на WASD
         if keys[pygame.K_w]:
-            player.move()
+            if Obstacle.moving_coef:
+                player.move()
+            else:
+                pass
         if keys[pygame.K_s]:
-            player.move(-1)
+            if Obstacle.moving_coef:
+                player.move(-1)
+            else:
+                pass
         if keys[pygame.K_a]:
             player.turn(-1.5)
         if keys[pygame.K_d]:
@@ -322,10 +492,11 @@ if __name__ == '__main__':
 
         # Обновляем камеру
         all_sprites.update()
+        #Обновление карты
+        map.update(player.getcoords())
         camera.update()
 
         # Рисуем все что надо
-        screen.fill((93, 161, 48))
         camera.draw(screen, all_sprites)
 
         # Обновляем экран
