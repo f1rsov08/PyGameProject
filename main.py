@@ -463,9 +463,15 @@ if __name__ == '__main__':
         keys = pygame.key.get_pressed()
         # Управление на WASD
         if keys[pygame.K_w]:
-            player.move()
+            if Obstacle.moving_coef:
+                player.move()
+            else:
+                pass
         if keys[pygame.K_s]:
-            player.move(-1)
+            if Obstacle.moving_coef:
+                player.move(-1)
+            else:
+                pass
         if keys[pygame.K_a]:
             player.turn(-1.5)
         if keys[pygame.K_d]:
