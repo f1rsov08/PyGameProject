@@ -6,7 +6,7 @@ import random
 
 pygame.init()
 size = width, height = 600, 600
-MAPS = ['data/map1.txt']
+MAPS = ['data/maps/map1.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
@@ -112,8 +112,8 @@ class Tank(Entity):
     def __init__(self, x, y, direction=0, health=100, speed=1.5, ai='player'):
         super().__init__(x, y, direction, health, tanks)
         # Загрузка изображений
-        self.image_track = pygame.transform.scale(load_image("tank_track.png"), (128, 128))
-        self.image_turret = pygame.transform.scale(load_image("tank_turret.png"), (128, 128))
+        self.image_track = pygame.transform.scale(load_image("images/tank_track.png"), (128, 128))
+        self.image_turret = pygame.transform.scale(load_image("images/tank_turret.png"), (128, 128))
         self.rect = self.image_track.get_rect()
         self.mask = pygame.mask.from_surface(self.image_track)
         # Задаем координаты танка
@@ -252,7 +252,7 @@ class Bullet(Entity):
 
     def __init__(self, x, y, direction=0):
         super().__init__(x, y, direction, -1)
-        self.bullet = pygame.transform.scale(load_image("bullet.png"), (128, 128))
+        self.bullet = pygame.transform.scale(load_image("images/bullet.png"), (128, 128))
         self.rect = self.bullet.get_rect()
         self.mask = pygame.mask.from_surface(self.bullet)
         self.rect.x = self.x
@@ -360,28 +360,28 @@ class Maps:
            = -  wood_wall - деревянная стена
            W - bush - кусты"""
         if 'L' in self.textures:
-            self.light_box = pygame.transform.scale(load_image("light_box.png"), (self.obj_size, self.obj_size))
+            self.light_box = pygame.transform.scale(load_image("images/light_box.png"), (self.obj_size, self.obj_size))
         if '0' in self.textures:
-            self.sand_ground = pygame.transform.scale(load_image("sand_ground.png"), (self.obj_size, self.obj_size))
+            self.sand_ground = pygame.transform.scale(load_image("images/sand_ground.png"), (self.obj_size, self.obj_size))
         if '#' in self.textures:
-            self.barrier = pygame.transform.scale(load_image("brick_barrier.png"), (self.obj_size, self.obj_size))
+            self.barrier = pygame.transform.scale(load_image("images/brick_barrier.png"), (self.obj_size, self.obj_size))
         if 'D' in self.textures:
-            self.dark_box = pygame.transform.scale(load_image("dark_box.png"), (self.obj_size, self.obj_size))
+            self.dark_box = pygame.transform.scale(load_image("images/dark_box.png"), (self.obj_size, self.obj_size))
         if '1' in self.textures:
-            self.grass_ground = pygame.transform.scale(load_image("grass_ground.png"), (self.obj_size, self.obj_size))
+            self.grass_ground = pygame.transform.scale(load_image("images/grass_ground.png"), (self.obj_size, self.obj_size))
         if '2' in self.textures:
-            self.stone_ground = pygame.transform.scale(load_image("stone_ground.png"), (self.obj_size, self.obj_size))
+            self.stone_ground = pygame.transform.scale(load_image("images/stone_ground.png"), (self.obj_size, self.obj_size))
         if '3' in self.textures:
-            self.wood_ground = pygame.transform.scale(load_image("wood_ground.png"), (self.obj_size, self.obj_size))
+            self.wood_ground = pygame.transform.scale(load_image("images/wood_ground.png"), (self.obj_size, self.obj_size))
         if '-' in self.textures:
-            self.sandstone_wall = pygame.transform.scale(load_image("sandstone_wall.png"),
+            self.sandstone_wall = pygame.transform.scale(load_image("images/sandstone_wall.png"),
                                                          (self.obj_size, self.obj_size))
         if '+' in self.textures:
-            self.stone_wall = pygame.transform.scale(load_image("stone_wall.png"), (self.obj_size, self.obj_size))
+            self.stone_wall = pygame.transform.scale(load_image("images/stone_wall.png"), (self.obj_size, self.obj_size))
         if '=' in self.textures:
-            self.wood_wall = pygame.transform.scale(load_image("wood_wall.png"), (self.obj_size, self.obj_size))
+            self.wood_wall = pygame.transform.scale(load_image("images/wood_wall.png"), (self.obj_size, self.obj_size))
         if 'W' in self.textures:
-            self.bush = pygame.transform.scale(load_image("bush.png"), (self.obj_size, self.obj_size))
+            self.bush = pygame.transform.scale(load_image("images/bush.png"), (self.obj_size, self.obj_size))
 
     """рисование поля"""
 
