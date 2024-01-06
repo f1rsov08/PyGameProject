@@ -275,12 +275,12 @@ class Bullet(Entity):
 
 if __name__ == '__main__':
     # Травяной цвет)
-    screen.fill((93, 161, 48))
+    #screen.fill((93, 161, 48))
     # Создаем 10 коробок, чтобы видеть перемещения танка
-    for i in range(10):
-        box = Box(random.randint(-300, 300), random.randint(-300, 300))
-        all_sprites.add(box)
-        box.name = f'Коробка {i}'
+    #for i in range(10):
+    #    box = Box(random.randint(-300, 300), random.randint(-300, 300))
+    #    all_sprites.add(box)
+    #    box.name = f'Коробка {i}'
 
     # Создаем танк игрока
     player = Tank(0, 0)
