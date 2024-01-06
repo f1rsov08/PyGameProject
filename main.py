@@ -10,6 +10,7 @@ MAPS = ['data/map1.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
+obstacles = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
