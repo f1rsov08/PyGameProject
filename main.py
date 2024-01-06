@@ -418,6 +418,9 @@ class Maps:
 
 
 if __name__ == '__main__':
+    map = Maps(screen)
+    map.select(1)
+    map.generate()
 
     # Травяной цвет)
     #screen.fill((93, 161, 48))
