@@ -5,7 +5,7 @@ import pygame
 import random
 
 pygame.init()
-size = width, height = 600, 600
+size = width, height = 800, 800
 MAPS = ['data/maps/map1.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
@@ -32,11 +32,11 @@ def load_image(name, colorkey=None):
     return image
 
 
-def blit_rotate(surf, image, pos, originPos, angle):
+def blit_rotate(surf, image, pos, origin_pos, angle):
     '''
     Поворот спрайтов относительно центра
     '''
-    image_rect = image.get_rect(topleft=(pos[0] - originPos[0], pos[1] - originPos[1]))
+    image_rect = image.get_rect(topleft=(pos[0] - origin_pos[0], pos[1] - origin_pos[1]))
     offset_center_to_pivot = pygame.math.Vector2(pos) - image_rect.center
 
     rotated_offset = offset_center_to_pivot.rotate(-angle)
@@ -62,9 +62,10 @@ class Camera:
     Камера
     '''
 
-    def __init__(self, x, y, attached_entity=None):
+    def __init__(self, x, y, angle=0, attached_entity=None):
         # Координаты камеры
         self.x, self.y = x, y
+        self.angle = angle
         # Привязанная сущность
         # Камера будет "следить" за ней
         self.attached_entity = attached_entity
@@ -75,6 +76,7 @@ class Camera:
         '''
         if self.attached_entity is not None:
             self.x, self.y = self.attached_entity.x, self.attached_entity.y
+            self.angle = self.attached_entity.direction + 90
 
     def draw(self, screen, objs):
         '''
@@ -103,19 +105,22 @@ class Entity(pygame.sprite.Sprite):
         '''
         return self.x, self.y
 
+    def update(self):
+        if self.health <= 0:
+            self.kill()
+
 
 class Tank(Entity):
     '''
     Танк
     '''
 
-    def __init__(self, x, y, direction=0, health=100, speed=1.5, ai='player'):
+    def __init__(self, x, y, direction=0, health=100, speed=1.5, reload_time=1000, ai='player'):
         super().__init__(x, y, direction, health, tanks)
         # Загрузка изображений
-        self.image_track = pygame.transform.scale(load_image("images/tank_track.png"), (128, 128))
+        self.image_track = pygame.transform.scale(load_image("images/tank_track.png"), (64, 64))
         self.image_turret = pygame.transform.scale(load_image("images/tank_turret.png"), (128, 128))
         self.rect = self.image_track.get_rect()
-        self.mask = pygame.mask.from_surface(self.image_track)
         # Задаем координаты танка
         self.rect.x = self.x
         self.rect.y = self.y
@@ -123,20 +128,28 @@ class Tank(Entity):
         self.turret_direction = direction
         # Скорость танка
         self.speed = speed
+        # Время перезарядки
+        self.reload_time = reload_time
+        self.last_shot_time = 0
         # ИИ
         self.ai = ai
-
-    def getcoords(self):
-        return (self.x, self.y)
 
     def move(self, multiplier=1):
         '''
         Перемещение танка
         '''
-        self.x += math.cos(math.radians(self.direction)) * self.speed * multiplier
-        self.y += math.sin(math.radians(self.direction)) * self.speed * multiplier
+        x = math.cos(math.radians(self.direction)) * self.speed * multiplier
+        y = math.sin(math.radians(self.direction)) * self.speed * multiplier
+        self.x += x
         self.rect.x = self.x
+        if pygame.sprite.spritecollideany(self, obstacles):
+            self.x -= x
+            self.rect.x = self.x
+        self.y += y
         self.rect.y = self.y
+        if pygame.sprite.spritecollideany(self, obstacles):
+            self.y -= y
+            self.rect.y = self.y
 
     def turn(self, angle):
         '''
@@ -151,22 +164,33 @@ class Tank(Entity):
         # Вычисляем координаты танка на экране при центре в (0, 0)
         x = (camera.x - self.x) * -1
         y = (camera.y - self.y) * -1
+        d = (x ** 2 + y ** 2) ** 0.5
+        if x < 0:
+            d *= -1
+        try:
+            angle = math.degrees(math.atan(y / x)) - camera.angle
+        except ZeroDivisionError:
+            angle = -camera.angle
+        x = d * math.cos(math.radians(angle))
+        y = d * math.sin(math.radians(angle))
         # Получаем направление к цели
         target_angle = self.get_target(camera)
         # Рисуем
-        blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (64, 64),
-                    self.direction * -1)
+        blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (32, 32),
+                    self.direction * -1 + camera.angle)
         blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
-                    target_angle * -1)
+                    target_angle * -1 - self.direction + camera.angle)
 
     def get_target(self, camera=None):
         '''
         Получаем цель танка
         '''
+        addition = 0
         if self.ai == 'player':
             # Если танком управляет игрок, то функция возвращает координаты мыши
             x, y = pygame.mouse.get_pos()
             target_x, target_y = x + camera.x - width // 2, y + camera.y - height // 2
+            addition = 90
         elif self.ai == 'enemy':
             # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
             players = \
@@ -179,13 +203,10 @@ class Tank(Entity):
         else:
             # Если кто-то другой, то 0, 0
             target_x, target_y = 0, 0
-        # Вычисляем координаты цели относительно танка
         target_x, target_y = target_x - self.x, target_y - self.y
         try:
-            # Пробуем вычислить угол поворота башни танка
             target_angle = math.degrees(math.atan(target_y / target_x))
         except ZeroDivisionError:
-            # И если x оказался равен 0, то сами подставляем значения
             if target_y > 0:
                 target_angle = 90
             elif target_y < 0:
@@ -193,18 +214,15 @@ class Tank(Entity):
             else:
                 target_angle = 0
         else:
-            # А если нам удалось вычислить угол, то поворачиваем его на 180 градусов, если цель с другой стороны
             if target_x < 0:
                 target_angle += 180
-        return target_angle
+        return target_angle + addition
 
     def shoot(self, camera=None):
-        all_sprites.add(Bullet(self.x,
-                               self.y, self.get_target(camera)))
-
-    def update(self):
-        if self.health <= 0:
-            self.kill()
+        if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
+            all_sprites.add(
+                Bullet(self.x, self.y, self.get_target(camera)))
+            self.last_shot_time = pygame.time.get_ticks()
 
 
 class Obstacle(Entity):
@@ -212,37 +230,34 @@ class Obstacle(Entity):
     Препятсвтие
     '''
 
-    def __init__(self, x, y, image, cell, can_break=0, direction=0):
-        super().__init__(x, y, direction, 25, obstacles)
+    def __init__(self, x, y, image, cell, can_break=0):
+        super().__init__(x, y, 0, [float('inf'), 25][can_break], obstacles)
         self.image = image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = x * cell -236
-        self.rect.y = y * cell-236
-        self.can_break = can_break
+        self.x = x * cell - 256
+        self.y = y * cell - 256
+        self.rect.x = self.x
+        self.rect.y = self.y
 
     def draw(self, screen, camera):
         '''
         Рисование коробки
         '''
         # Вычисляем координаты коробки на экране при центре в (0, 0)
-        x = (camera.x - self.rect.x) * -1
-        y = (camera.y - self.rect.y) * -1
+        x = (camera.x - self.x) * -1
+        y = (camera.y - self.y) * -1
+        d = (x ** 2 + y ** 2) ** 0.5
+        if x < 0:
+            d *= -1
+        try:
+            angle = math.degrees(math.atan(y / x)) - camera.angle
+        except ZeroDivisionError:
+            angle = -camera.angle
+        x = d * math.cos(math.radians(angle))
+        y = d * math.sin(math.radians(angle))
         # Рисуем
-        blit_rotate(screen, self.image, (x + width // 2, y + height // 2), (64, 64),
-                    self.direction * -1)
-
-    moving_coef = 1
-
-    def update(self):
-        if self.can_break:
-            if self.health <= 0:
-                self.kill()
-        if not self.can_break:
-            if self.health <= 0:
-                pass
-        if pygame.sprite.collide_mask(player, self):
-            Obstacle.moving_coef = 0
+        blit_rotate(screen, self.image, (x + width // 2, y + height // 2), (32, 32),
+                    self.direction * -1 + camera.angle)
 
 
 class Bullet(Entity):
@@ -252,9 +267,8 @@ class Bullet(Entity):
 
     def __init__(self, x, y, direction=0):
         super().__init__(x, y, direction, -1)
-        self.bullet = pygame.transform.scale(load_image("images/bullet.png"), (128, 128))
+        self.bullet = pygame.transform.scale(load_image("images/bullet.png"), (28, 8))
         self.rect = self.bullet.get_rect()
-        self.mask = pygame.mask.from_surface(self.bullet)
         self.rect.x = self.x
         self.rect.y = self.y
         self.distance = 0
@@ -266,9 +280,18 @@ class Bullet(Entity):
         # Вычисляем координаты снаряда на экране при центре в (0, 0)
         x = (camera.x - self.x) * -1
         y = (camera.y - self.y) * -1
+        d = (x ** 2 + y ** 2) ** 0.5
+        if x < 0:
+            d *= -1
+        try:
+            angle = math.degrees(math.atan(y / x)) - camera.angle
+        except ZeroDivisionError:
+            angle = -camera.angle
+        x = d * math.cos(math.radians(angle))
+        y = d * math.sin(math.radians(angle))
         # Рисуем
-        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (64, 64),
-                    self.direction * -1)
+        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (14, 4),
+                    self.direction * -1 + camera.angle)
 
     def update(self):
         '''
@@ -279,20 +302,20 @@ class Bullet(Entity):
         self.rect.x = self.x
         self.rect.y = self.y
         self.distance += 3
-        if self.distance > 600:
+        if self.distance > 1200:
             self.kill()
         for i in all_sprites:
-            if pygame.sprite.collide_mask(self, i) and i != self and not (type(i) is Tank and i.ai == 'player'):
+            if pygame.sprite.collide_rect(self, i) and i != self and not (type(i) is Tank and i.ai == 'player'):
                 i.health -= 25
                 self.kill()
 
-class Maps:
 
+class Maps:
     """КЛАСС КАРТ"""
 
     def __init__(self, main_screen):
         self.screen = main_screen
-        self.obj_size = 100
+        self.cell_size = 96
 
     """создание объектов на карте"""
 
@@ -301,8 +324,22 @@ class Maps:
 
     """обновление карты"""
 
-    def update(self, coords):
-        self.screen.blit(self.field, (-coords[0], -coords[1]))
+    def draw(self, camera):
+        x = -camera.x + width // 2 - 96 * 7 + 16
+        y = -camera.y + height // 2 - 96 * 7 + 16
+        d = (x ** 2 + y ** 2) ** 0.5
+        if x < 0:
+            d *= -1
+        try:
+            angle = math.degrees(math.atan(y / x)) - camera.angle
+        except ZeroDivisionError:
+            angle = -camera.angle
+        x = d * math.cos(math.radians(angle))
+        y = d * math.sin(math.radians(angle))
+
+        # Рисуем
+        blit_rotate(screen, self.field, (x + width // 2, y + height // 2), (32, 32),
+                    camera.angle)
 
     """загрузка карты из txt формата"""
 
@@ -334,7 +371,6 @@ class Maps:
     """создание размеров карты"""
 
     def create_size_map(self):
-        self.cell_size = 100
         width_field, height_field = self.cell_size * self.width_in_tiles, self.cell_size * self.height_in_tiles
         self.field = pygame.Surface((width_field, height_field))
 
@@ -346,42 +382,59 @@ class Maps:
 
     """загрузка текстур"""
 
-
     def load_textures(self):
         """# - brick_barrier - барьерная стена
-           0 - sand_ground - песочный пол
+           0 - sand_ground - песчаный пол
            L - light_box - светлая коробка
            D - dark_box - темная коробка
            1 - grass_ground - травянистый пол
            2 - stone_ground - каменный пол
            3 - wood_ground - деревянный пол
+           4 - snow_ground - снежный пол
            + - stone_wall - каменная стена
            - - sandstone_wall - песчаная стена
            = -  wood_wall - деревянная стена
+           ~ -  water - вода
            W - bush - кусты"""
         if 'L' in self.textures:
-            self.light_box = pygame.transform.scale(load_image("images/light_box.png"), (self.obj_size, self.obj_size))
+            self.light_box = pygame.transform.scale(load_image("images/light_box.png"),
+                                                    (self.cell_size, self.cell_size))
         if '0' in self.textures:
-            self.sand_ground = pygame.transform.scale(load_image("images/sand_ground.png"), (self.obj_size, self.obj_size))
+            self.sand_ground = pygame.transform.scale(load_image("images/sand_ground.png"),
+                                                      (self.cell_size, self.cell_size))
         if '#' in self.textures:
-            self.barrier = pygame.transform.scale(load_image("images/brick_barrier.png"), (self.obj_size, self.obj_size))
+            self.barrier = pygame.transform.scale(load_image("images/brick_barrier.png"),
+                                                  (self.cell_size, self.cell_size))
         if 'D' in self.textures:
-            self.dark_box = pygame.transform.scale(load_image("images/dark_box.png"), (self.obj_size, self.obj_size))
+            self.dark_box = pygame.transform.scale(load_image("images/dark_box.png"),
+                                                   (self.cell_size, self.cell_size))
         if '1' in self.textures:
-            self.grass_ground = pygame.transform.scale(load_image("images/grass_ground.png"), (self.obj_size, self.obj_size))
+            self.grass_ground = pygame.transform.scale(load_image("images/grass_ground.png"),
+                                                       (self.cell_size, self.cell_size))
         if '2' in self.textures:
-            self.stone_ground = pygame.transform.scale(load_image("images/stone_ground.png"), (self.obj_size, self.obj_size))
+            self.stone_ground = pygame.transform.scale(load_image("images/stone_ground.png"),
+                                                       (self.cell_size, self.cell_size))
         if '3' in self.textures:
-            self.wood_ground = pygame.transform.scale(load_image("images/wood_ground.png"), (self.obj_size, self.obj_size))
+            self.wood_ground = pygame.transform.scale(load_image("images/wood_ground.png"),
+                                                      (self.cell_size, self.cell_size))
+        if '4' in self.textures:
+            self.snow_ground = pygame.transform.scale(load_image("images/snow_ground.png"),
+                                                      (self.cell_size, self.cell_size))
         if '-' in self.textures:
             self.sandstone_wall = pygame.transform.scale(load_image("images/sandstone_wall.png"),
-                                                         (self.obj_size, self.obj_size))
+                                                         (self.cell_size, self.cell_size))
         if '+' in self.textures:
-            self.stone_wall = pygame.transform.scale(load_image("images/stone_wall.png"), (self.obj_size, self.obj_size))
+            self.stone_wall = pygame.transform.scale(load_image("images/stone_wall.png"),
+                                                     (self.cell_size, self.cell_size))
         if '=' in self.textures:
-            self.wood_wall = pygame.transform.scale(load_image("images/wood_wall.png"), (self.obj_size, self.obj_size))
+            self.wood_wall = pygame.transform.scale(load_image("images/wood_wall.png"),
+                                                    (self.cell_size, self.cell_size))
+        if '~' in self.textures:
+            self.water = pygame.transform.scale(load_image("images/water.png"),
+                                                (self.cell_size, self.cell_size))
         if 'W' in self.textures:
-            self.bush = pygame.transform.scale(load_image("images/bush.png"), (self.obj_size, self.obj_size))
+            self.bush = pygame.transform.scale(load_image("images/bush.png"),
+                                               (self.cell_size, self.cell_size))
 
     """рисование поля"""
 
@@ -410,6 +463,8 @@ class Maps:
                     self.field.blit(self.stone_ground, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '3':
                     self.field.blit(self.wood_ground, (x * self.cell_size, y * self.cell_size))
+                if self.map[y][x] == '4':
+                    self.field.blit(self.snow_ground, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '+':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.stone_wall, 0)
@@ -419,6 +474,9 @@ class Maps:
                 if self.map[y][x] == '=':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.wood_wall, 1)
+                if self.map[y][x] == '~':
+                    self.fill_ground_png(x, y)
+                    self.create_obj(x, y, self.water, 0)
 
     """Для заполения пола у ломающихся и не полностью заполненных объектов"""
 
@@ -426,7 +484,9 @@ class Maps:
         list_of_number_plates = sorted([(self.textures.count('0'), self.sand_ground),
                                         (self.textures.count('1'), self.grass_ground),
                                         (self.textures.count('2'), self.stone_ground),
-                                        (self.textures.count('3'), self.wood_ground)], key=lambda x: x[0])
+                                        (self.textures.count('3'), self.wood_ground),
+                                        (self.textures.count('4'), self.snow_ground),
+                                        (self.textures.count('~'), self.water)], key=lambda x: x[0])
         self.field.blit(list_of_number_plates[-1][1], (x * self.cell_size, y * self.cell_size))
 
 
@@ -438,14 +498,6 @@ if __name__ == '__main__':
     # для создания карты
     map.generate()
 
-    # Травяной цвет)
-    #screen.fill((93, 161, 48))
-    # Создаем 10 коробок, чтобы видеть перемещения танка
-    #for i in range(10):
-    #    box = Box(random.randint(-300, 300), random.randint(-300, 300))
-    #    all_sprites.add(box)
-    #    box.name = f'Коробка {i}'
-
     # Создаем танк игрока
     player = Tank(0, 0)
     player.name = 'Игрок'
@@ -454,7 +506,7 @@ if __name__ == '__main__':
     enemy_tank.name = 'Враг'
 
     # Создаем камеру
-    camera = Camera(0, 0, player)
+    camera = Camera(0, 0, 0, player)
 
     # Добавляем танки во группу спрайтов
 
@@ -469,34 +521,32 @@ if __name__ == '__main__':
             # Если окно закрыли, то завершаем цикл
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                player.shoot(camera)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    player.shoot(camera)
 
         # Получаем кнопки, которые нажаты
         keys = pygame.key.get_pressed()
         # Управление на WASD
         if keys[pygame.K_w]:
-            if Obstacle.moving_coef:
-                player.move()
-            else:
-                pass
+            player.move()
         if keys[pygame.K_s]:
-            if Obstacle.moving_coef:
-                player.move(-1)
-            else:
-                pass
+            player.move(-1)
         if keys[pygame.K_a]:
             player.turn(-1.5)
         if keys[pygame.K_d]:
             player.turn(1.5)
 
+        screen.fill((0, 0, 0))
         # Обновляем камеру
         all_sprites.update()
-        #Обновление карты
-        map.update(player.getcoords())
+
+        # Обновление карты
         camera.update()
 
         # Рисуем все что надо
+        map.draw(camera)
+
         camera.draw(screen, all_sprites)
 
         # Обновляем экран
