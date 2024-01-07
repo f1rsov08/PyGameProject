@@ -6,7 +6,7 @@ import random
 
 pygame.init()
 size = width, height = 800, 800
-MAPS = ['data/maps/map1.txt']
+MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
@@ -76,14 +76,17 @@ class Camera:
         '''
         if self.attached_entity is not None:
             self.x, self.y = self.attached_entity.x, self.attached_entity.y
-            self.angle = self.attached_entity.direction + 90
+            self.angle = self.attached_entity.direction
 
     def draw(self, screen, objs):
         '''
         Рисование объектов
         '''
+        sx, ex = self.x - width // 2 - 136, self.x + width // 2 + 136
+        sy, ey = self.y - height // 2 - 136, self.y + height // 2 + 136
         for obj in objs:
-            obj.draw(screen, self)
+            if sx < obj.x < ex and sy < obj.y < ey:
+                obj.draw(screen, self)
 
 
 class Entity(pygame.sprite.Sprite):
@@ -115,7 +118,7 @@ class Tank(Entity):
     Танк
     '''
 
-    def __init__(self, x, y, direction=0, health=100, speed=1.5, reload_time=1000, ai='player'):
+    def __init__(self, x, y, direction=0, health=100, speed=1.5, reload_time=1000, ai='player', team='player'):
         super().__init__(x, y, direction, health, tanks)
         # Загрузка изображений
         self.image_track = pygame.transform.scale(load_image("images/tank_track.png"), (64, 64))
@@ -133,13 +136,14 @@ class Tank(Entity):
         self.last_shot_time = 0
         # ИИ
         self.ai = ai
+        self.team = team
 
     def move(self, multiplier=1):
         '''
         Перемещение танка
         '''
-        x = math.cos(math.radians(self.direction)) * self.speed * multiplier
-        y = math.sin(math.radians(self.direction)) * self.speed * multiplier
+        x = math.cos(math.radians(self.direction - 90)) * self.speed * multiplier
+        y = math.sin(math.radians(self.direction - 90)) * self.speed * multiplier
         self.x += x
         self.rect.x = self.x
         if pygame.sprite.spritecollideany(self, obstacles):
@@ -179,7 +183,7 @@ class Tank(Entity):
         blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (32, 32),
                     self.direction * -1 + camera.angle)
         blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
-                    target_angle * -1 - self.direction + camera.angle)
+                    target_angle * -1 + camera.angle - 90)
 
     def get_target(self, camera=None):
         '''
@@ -189,21 +193,21 @@ class Tank(Entity):
         if self.ai == 'player':
             # Если танком управляет игрок, то функция возвращает координаты мыши
             x, y = pygame.mouse.get_pos()
-            target_x, target_y = x + camera.x - width // 2, y + camera.y - height // 2
-            addition = 90
+            target_x, target_y = x - width // 2, y - height // 2
+            addition = camera.angle
         elif self.ai == 'enemy':
             # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
             players = \
-                sorted(filter(lambda sprite: type(sprite) is Tank and sprite.ai == 'player', all_sprites),
+                sorted(filter(lambda sprite: type(sprite) is Tank and sprite.team == 'player', all_sprites),
                        key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
             if players:
                 target_x, target_y = players[0].coords()
+                target_x, target_y = target_x - self.x, target_y - self.y
             else:
                 target_x, target_y = 0, 0
         else:
             # Если кто-то другой, то 0, 0
             target_x, target_y = 0, 0
-        target_x, target_y = target_x - self.x, target_y - self.y
         try:
             target_angle = math.degrees(math.atan(target_y / target_x))
         except ZeroDivisionError:
@@ -220,8 +224,7 @@ class Tank(Entity):
 
     def shoot(self, camera=None):
         if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
-            all_sprites.add(
-                Bullet(self.x, self.y, self.get_target(camera)))
+            all_sprites.add(Bullet(self.x, self.y, self.get_target(camera), self.team))
             self.last_shot_time = pygame.time.get_ticks()
 
 
@@ -265,13 +268,14 @@ class Bullet(Entity):
     Снаряд
     '''
 
-    def __init__(self, x, y, direction=0):
+    def __init__(self, x, y, direction=0, team='player'):
         super().__init__(x, y, direction, -1)
         self.bullet = pygame.transform.scale(load_image("images/bullet.png"), (28, 8))
         self.rect = self.bullet.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
         self.distance = 0
+        self.team = team
 
     def draw(self, screen, camera):
         '''
@@ -305,7 +309,7 @@ class Bullet(Entity):
         if self.distance > 1200:
             self.kill()
         for i in all_sprites:
-            if pygame.sprite.collide_rect(self, i) and i != self and not (type(i) is Tank and i.ai == 'player'):
+            if pygame.sprite.collide_rect(self, i) and i != self and not (type(i) is Tank and i.team == self.team):
                 i.health -= 25
                 self.kill()
 
@@ -499,11 +503,9 @@ if __name__ == '__main__':
     map.generate()
 
     # Создаем танк игрока
-    player = Tank(0, 0)
-    player.name = 'Игрок'
+    player = Tank(150, 150)
     # Создаем танк врага
-    enemy_tank = Tank(40, 40, ai='enemy')
-    enemy_tank.name = 'Враг'
+    enemy_tank = Tank(40, 40, ai='enemy', team='enemy')
 
     # Создаем камеру
     camera = Camera(0, 0, 0, player)
@@ -529,13 +531,16 @@ if __name__ == '__main__':
         keys = pygame.key.get_pressed()
         # Управление на WASD
         if keys[pygame.K_w]:
-            player.move()
+            player.move(2)
         if keys[pygame.K_s]:
-            player.move(-1)
+            player.move(-2)
         if keys[pygame.K_a]:
             player.turn(-1.5)
         if keys[pygame.K_d]:
             player.turn(1.5)
+
+        enemy_tank.turn(1.5)
+        enemy_tank.shoot()
 
         screen.fill((0, 0, 0))
         # Обновляем камеру
@@ -546,7 +551,6 @@ if __name__ == '__main__':
 
         # Рисуем все что надо
         map.draw(camera)
-
         camera.draw(screen, all_sprites)
 
         # Обновляем экран
