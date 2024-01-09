@@ -11,6 +11,7 @@ screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
 obstacles = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
@@ -179,6 +180,8 @@ class Tank(Entity):
         y = d * math.sin(math.radians(angle))
         # Получаем направление к цели
         target_angle = self.get_target(camera)
+        if target_angle is None:
+            target_angle = self.direction
         # Рисуем
         blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (32, 32),
                     self.direction * -1 + camera.angle)
@@ -204,7 +207,7 @@ class Tank(Entity):
                 target_x, target_y = players[0].coords()
                 target_x, target_y = target_x - self.x, target_y - self.y
             else:
-                target_x, target_y = 0, 0
+                return None
         else:
             # Если кто-то другой, то 0, 0
             target_x, target_y = 0, 0
@@ -227,6 +230,16 @@ class Tank(Entity):
             all_sprites.add(Bullet(self.x, self.y, self.get_target(camera), self.team))
             self.last_shot_time = pygame.time.get_ticks()
 
+    def update(self):
+        super().update()
+        if self.ai == 'enemy':
+            target = self.get_target()
+            if target:
+                self.direction = target + 90
+                self.move()
+                self.shoot()
+            else:
+                self.turn(5)
 
 class Obstacle(Entity):
     '''
@@ -329,8 +342,8 @@ class Maps:
     """обновление карты"""
 
     def draw(self, camera):
-        x = -camera.x + width // 2 - 96 * 7 + 16
-        y = -camera.y + height // 2 - 96 * 7 + 16
+        x = -camera.x - 96 * (self.width_in_tiles - 7) + 32
+        y = -camera.y - 96 * (self.height_in_tiles - 7) + 32
         d = (x ** 2 + y ** 2) ** 0.5
         if x < 0:
             d *= -1
@@ -497,7 +510,7 @@ class Maps:
 if __name__ == '__main__':
     # передается главный экран где будут отображаться все объекты
     map = Maps(screen)
-    # это для выбора карты или можно map.selectrandom()
+    # это для выбора карты или можно map.selectrandod)
     map.select(1)
     # для создания карты
     map.generate()
@@ -505,7 +518,8 @@ if __name__ == '__main__':
     # Создаем танк игрока
     player = Tank(150, 150)
     # Создаем танк врага
-    enemy_tank = Tank(40, 40, ai='enemy', team='enemy')
+    enemies.add(Tank(40, 40, ai='enemy', team='enemy'))
+    enemies.add(Tank(400, 400, ai='enemy', team='enemy'))
 
     # Создаем камеру
     camera = Camera(0, 0, 0, player)
@@ -518,6 +532,7 @@ if __name__ == '__main__':
     # Основной цикл
     running = True
     while running:
+
         # Проходимся по ивентам
         for event in pygame.event.get():
             # Если окно закрыли, то завершаем цикл
@@ -539,14 +554,9 @@ if __name__ == '__main__':
         if keys[pygame.K_d]:
             player.turn(1.5)
 
-        enemy_tank.turn(1.5)
-        enemy_tank.shoot()
-
         screen.fill((0, 0, 0))
-        # Обновляем камеру
+        # Обновляем
         all_sprites.update()
-
-        # Обновление карты
         camera.update()
 
         # Рисуем все что надо
