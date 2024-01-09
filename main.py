@@ -498,12 +498,17 @@ class Maps:
     """Для заполения пола у ломающихся и не полностью заполненных объектов"""
 
     def fill_ground_png(self, x, y):
-        list_of_number_plates = sorted([(self.textures.count('0'), self.sand_ground),
-                                        (self.textures.count('1'), self.grass_ground),
-                                        (self.textures.count('2'), self.stone_ground),
-                                        (self.textures.count('3'), self.wood_ground),
-                                        (self.textures.count('4'), self.snow_ground),
-                                        (self.textures.count('~'), self.water)], key=lambda x: x[0])
+        list_of_number_plates = sorted(
+            [(self.textures.count('0'), pygame.transform.scale(load_image("images/sand_ground.png"),
+                                                               (self.cell_size, self.cell_size))),
+             (self.textures.count('1'), pygame.transform.scale(load_image("images/grass_ground.png"),
+                                                               (self.cell_size, self.cell_size))),
+             (self.textures.count('2'), pygame.transform.scale(load_image("images/stone_ground.png"),
+                                                               (self.cell_size, self.cell_size))),
+             (self.textures.count('3'), pygame.transform.scale(load_image("images/wood_ground.png"),
+                                                               (self.cell_size, self.cell_size))),
+             (self.textures.count('4'), pygame.transform.scale(load_image("images/snow_ground.png"),
+                                                               (self.cell_size, self.cell_size)))], key=lambda x: x[0])
         self.field.blit(list_of_number_plates[-1][1], (x * self.cell_size, y * self.cell_size))
 
 
