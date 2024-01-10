@@ -6,7 +6,7 @@ import random
 
 pygame.init()
 size = WIDTH, HEIGHT = 1000, 800
-MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt']
+MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt', 'data/maps/maze.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
@@ -39,15 +39,10 @@ def blit_rotate(surf, image, pos, origin_pos, angle):
     '''
     image_rect = image.get_rect(topleft=(pos[0] - origin_pos[0], pos[1] - origin_pos[1]))
     offset_center_to_pivot = pygame.math.Vector2(pos) - image_rect.center
-
     rotated_offset = offset_center_to_pivot.rotate(-angle)
-
     rotated_image_center = (pos[0] - rotated_offset.x, pos[1] - rotated_offset.y)
-
     rotated_image = pygame.transform.rotate(image, angle)
-
     rotated_image_rect = rotated_image.get_rect(center=rotated_image_center)
-
     surf.blit(rotated_image, rotated_image_rect)
 
 
@@ -261,11 +256,10 @@ class Obstacle(Entity):
         '''
         width, height = screen.get_width(), screen.get_height()
         # Вычисляем координаты коробки на экране при центре в (0, 0)
-        x = (camera.x - self.x) * -1
-        y = (camera.y - self.y) * -1
+        x = (camera.x - self.x) * -1 - 32
+        y = (camera.y - self.y) * -1 - 32
         # Рисуем
-        blit_rotate(screen, self.image, (x + width // 2, y + height // 2), (32, 32),
-                    self.direction * -1)
+        screen.blit(self.image, (x + width // 2, y + height // 2))
 
 
 class Bullet(Entity):
@@ -490,16 +484,14 @@ if __name__ == '__main__':
     # передается главный экран где будут отображаться все объекты
     map = Maps(screen)
     # это для выбора карты или можно map.selectrandod)
-    map.select(1)
+    map.select(3)
     # для создания карты
     map.generate()
-
     # Создаем танк игрока
-    player = Tank(150, 150)
+    player = Tank(230, 230)
 
     # Создаем танк врага
-    enemies.add(Tank(40, 40, ai='enemy', team='enemy'))
-    enemies.add(Tank(400, 400, ai='enemy', team='enemy'))
+    enemies.add(Tank(96 - 288 + 48, 96 - 288 + 48, ai='enemy', team='enemy'))
 
     # Создаем камеру
     camera = Camera(0, 0, 0, player)
@@ -547,10 +539,6 @@ if __name__ == '__main__':
                 camera.angle -= 1.5
             if keys[pygame.K_e]:
                 camera.angle += 1.5
-        if keys[pygame.K_MINUS]:
-            zoom -= 1
-        if keys[pygame.K_PLUS]:
-            zoom += 1
 
         screen.fill((0, 0, 0))
         # Обновляем
