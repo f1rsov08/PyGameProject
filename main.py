@@ -221,7 +221,7 @@ class Tank(Entity):
 
     def shoot(self, camera=None):
         if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
-            all_sprites.add(Bullet(self.x, self.y, self.get_target(camera), self.team))
+            all_sprites.add(Bullet(self.x, self.y, self.get_target(camera), 25, 'big', self.team))
             self.last_shot_time = pygame.time.get_ticks()
 
     def update(self):
@@ -234,6 +234,91 @@ class Tank(Entity):
                 self.shoot()
             else:
                 self.turn(5)
+
+
+class Turret(Entity):
+    '''
+    Турель
+    '''
+
+    def __init__(self, x, y, direction=0, health=100, reload_time=250, ai='enemy', team='enemy'):
+        super().__init__(x, y, direction, health, tanks)
+        # Загрузка изображений
+        self.image_track = pygame.transform.scale(load_image("images/turret_track.png"), (64, 64))
+        self.image_turret = pygame.transform.scale(load_image("images/turret_turret.png"), (128, 128))
+        self.rect = self.image_track.get_rect()
+        # Задаем координаты турели
+        self.rect.x = self.x
+        self.rect.y = self.y
+        # Задаем направление башни турели
+        self.turret_direction = direction
+        # Время перезарядки
+        self.reload_time = reload_time
+        self.last_shot_time = 0
+        # ИИ
+        self.ai = ai
+        self.team = team
+
+    def draw(self, screen, camera):
+        '''
+        Рисование танка
+        '''
+        width, height = screen.get_width(), screen.get_height()
+        # Вычисляем координаты танка на экране при центре в (0, 0)
+        x = (camera.x - self.x) * -1
+        y = (camera.y - self.y) * -1
+        # Получаем направление к цели
+        target_angle = self.get_target()
+        if target_angle is None:
+            target_angle = self.direction - 90
+        # Рисуем
+        blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (32, 32),
+                    self.direction * -1)
+        blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
+                    target_angle * -1 - 90)
+
+    def get_target(self):
+        '''
+        Получаем цель танка
+        '''
+        if self.ai == 'enemy':
+            # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
+            players = \
+                sorted(filter(lambda sprite: type(sprite) is Tank and sprite.team == 'player', all_sprites),
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
+            if players:
+                target_x, target_y = players[0].coords()
+                target_x, target_y = target_x - self.x, target_y - self.y
+            else:
+                return None
+        else:
+            # Если кто-то другой, то 0, 0
+            target_x, target_y = 0, 0
+        try:
+            target_angle = math.degrees(math.atan(target_y / target_x))
+        except ZeroDivisionError:
+            if target_y > 0:
+                target_angle = 90
+            elif target_y < 0:
+                target_angle = 270
+            else:
+                target_angle = 0
+        else:
+            if target_x < 0:
+                target_angle += 180
+        return target_angle
+
+    def shoot(self):
+        if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
+            all_sprites.add(Bullet(self.x, self.y, self.get_target(), 10, 'small', self.team))
+            self.last_shot_time = pygame.time.get_ticks()
+
+    def update(self):
+        super().update()
+        if self.ai == 'enemy':
+            target = self.get_target()
+            if target:
+                self.shoot()
 
 
 class Obstacle(Entity):
@@ -267,13 +352,17 @@ class Bullet(Entity):
     Снаряд
     '''
 
-    def __init__(self, x, y, direction=0, team='player'):
+    def __init__(self, x, y, direction=0, damage=25, size='big', team='player'):
         super().__init__(x, y, direction, -1)
-        self.bullet = pygame.transform.scale(load_image("images/bullet.png"), (28, 8))
+        if size == 'big':
+            self.bullet = pygame.transform.scale(load_image(f"images/big_bullet.png"), (28, 8))
+        elif size == 'small':
+            self.bullet = pygame.transform.scale(load_image(f"images/small_bullet.png"), (8, 8))
         self.rect = self.bullet.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
         self.distance = 0
+        self.damage = damage
         self.team = team
 
     def draw(self, screen, camera):
@@ -300,8 +389,9 @@ class Bullet(Entity):
         if self.distance > 1200:
             self.kill()
         for i in all_sprites:
-            if pygame.sprite.collide_rect(self, i) and i != self and not (type(i) is Tank and i.team == self.team):
-                i.health -= 25
+            if pygame.sprite.collide_rect(self, i) and i != self and not (
+                    type(i) in [Tank, Turret, Bullet] and i.team == self.team):
+                i.health -= self.damage
                 self.kill()
 
 
@@ -488,10 +578,11 @@ if __name__ == '__main__':
     # для создания карты
     map.generate()
     # Создаем танк игрока
-    player = Tank(230, 230)
+    player = Tank(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
 
     # Создаем танк врага
     enemies.add(Tank(96 - 288 + 48, 96 - 288 + 48, ai='enemy', team='enemy'))
+    enemies.add(Turret(9 * 96 - 288 + 48, 9 * 96 - 288 + 48))
 
     # Создаем камеру
     camera = Camera(0, 0, 0, player)
