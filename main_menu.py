@@ -40,6 +40,13 @@ class Button:
         pygame.draw.rect(self.button, 'white', (0, 0, self.width, self.height), 2)
         self.button.blit(self.output_text, self.auto_font_pos)
 
+    def create_font(self):
+        self.font = pygame.font.Font('data/fonts/TunnelFront.ttf', self.font_size)
+        self.output_text = self.font.render(self.text, True, self.color_text)
+        self.auto_font_pos = (self.width // 2 - self.font.size(self.text)[0] // 2, self.height // 2 - self.font.size(self.text)[1] // 2)
+
+
+
 clock = pygame.time.Clock()
 running = True
 screen.fill('green')
