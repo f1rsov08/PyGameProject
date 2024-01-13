@@ -45,6 +45,10 @@ class Button:
         self.output_text = self.font.render(self.text, True, self.color_text)
         self.auto_font_pos = (self.width // 2 - self.font.size(self.text)[0] // 2, self.height // 2 - self.font.size(self.text)[1] // 2)
 
+    def create_field_button(self):
+        self.button = pygame.surface.Surface((self.width, self.height))
+        self.button.fill(self.color)
+        pygame.draw.rect(self.button, 'white', (0, 0, self.width, self.height), 2)
 
 
 clock = pygame.time.Clock()
