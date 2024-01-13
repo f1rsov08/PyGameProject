@@ -7,14 +7,36 @@ disp = pygame.display.Info()
 size_full_screen = width1, height1 = (disp.current_w, disp.current_h)
 size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
-type_tab = 'Main_Menu'
+full_screen_coef = 1
+current_type_tab = 'Main_Menu'
+
 
 def full_screen():
-    global screen, width, height,size, width1, height1
-    size = width, height = width1, height1
-    screen = pygame.display.set_mode(size_full_screen, pygame.FULLSCREEN)
-    settings.__init__()
-    settings.create()
+    global screen, width, height,size, width1, height1, full_screen_coef
+    if full_screen_coef:
+        size = width, height = width1, height1
+        screen = pygame.display.set_mode(size_full_screen, pygame.FULLSCREEN)
+        settings.__init__()
+        settings.create()
+        full_screen_coef = 0
+    else:
+        size = width, height = 800, 600
+        screen = pygame.display.set_mode(size)
+        settings.__init__()
+        settings.create()
+        full_screen_coef = 1
+
+def back():
+    global current_type_tab
+    if current_type_tab == 'Settings':
+        current_type_tab = 'Main_Menu'
+        main_menu.__init__()
+        main_menu.create()
+
+def quit()
+    global running
+    running = False
+
 
 
 def load_image(name, colorkey=None):
@@ -138,13 +160,18 @@ class Button:
             self.not_aimed_button_color()
 
     def pressed(self):
-        global type_tab
+        global current_type_tab
         if self.input_text == 'Играть':
-            type_tab = 'Game'
+            current_type_tab = 'Game'
         if self.input_text == 'Настройки':
-            type_tab = 'Settings'
+            current_type_tab = 'Settings'
         if self.input_text == 'Полноэкранный режим':
-            type_tab = 'Full-display'
+            full_screen()
+        if self.input_text == 'Назад':
+            back()
+        if self.input_text == 'Выйти':
+
+
 
 
 
@@ -161,14 +188,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    if type_tab == 'Main_Menu':
+    if current_type_tab == 'Main_Menu':
         main_menu.draw()
-    if type_tab == 'Settings':
+    if current_type_tab == 'Settings':
         settings.draw()
-    if type_tab == 'Full-display':
-        settings.full_screen()
-        type_tab = 'Settings'
-    print(type_tab)
+    print(current_type_tab)
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
