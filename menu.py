@@ -183,7 +183,7 @@ class Button:
     def pressed(self):
         global current_type_tab
         if self.input_text == 'Играть':
-            current_type_tab = 'Game'
+            current_type_tab = 'Select_level'
         if self.input_text == 'Настройки':
             current_type_tab = 'Settings'
         if self.input_text == 'Полноэкранный режим':
@@ -216,7 +216,7 @@ while running:
         main_menu.draw()
     if current_type_tab == 'Settings':
         settings.draw()
-    if current_type_tab == 'Game':
+    if current_type_tab == 'Select_level':
         select_lvl.draw()
     print(current_type_tab)
     pygame.display.flip()
