@@ -315,8 +315,7 @@ class Turret(Entity):
     def update(self):
         super().update()
         if self.ai == 'enemy':
-            target = self.get_target()
-            if target:
+            if self.get_target():
                 self.shoot()
 
 
@@ -325,7 +324,7 @@ class Obstacle(Entity):
     Препятсвтие
     '''
 
-    def __init__(self, x, y, image, cell, can_break=0):
+    def __init__(self, x, y, image, cell, can_break=0, skips_bullets=0):
         super().__init__(x, y, 0, [float('inf'), 25][can_break], obstacles)
         self.rect = pygame.Rect(0, 0, cell, cell)
         rect = image.get_rect()
@@ -339,6 +338,7 @@ class Obstacle(Entity):
         self.y = y * cell - 256
         self.rect.x = self.x
         self.rect.y = self.y
+        self.skips_bullets = skips_bullets
 
     def draw(self, screen, camera, frame):
         '''
@@ -359,14 +359,12 @@ class Bullet(Entity):
     '''
 
     def __init__(self, x, y, direction=0, damage=25, size='big', team='player'):
-        super().__init__(x, y, direction, -1)
+        super().__init__(x, y, direction, float('inf'))
         if size == 'big':
             self.bullet = pygame.transform.scale(load_image(f"images/big_bullet.png"), (28, 8))
         elif size == 'small':
             self.bullet = pygame.transform.scale(load_image(f"images/small_bullet.png"), (8, 8))
-        self.rect = self.bullet.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect = pygame.Rect(self.x, self.y, 8, 8)
         self.distance = 0
         self.damage = damage
         self.team = team
@@ -380,23 +378,24 @@ class Bullet(Entity):
         x = (camera.x - self.x) * -1
         y = (camera.y - self.y) * -1
         # Рисуем
-        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (14, 4),
+        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (4, 4),
                     self.direction * -1)
 
     def update(self):
         '''
-        Перемещение снарядаa
+        Перемещение снаряда
         '''
-        self.x += math.cos(math.radians(self.direction)) * 3
-        self.y += math.sin(math.radians(self.direction)) * 3
-        self.rect.x = self.x
-        self.rect.y = self.y
-        self.distance += 3
-        if self.distance > 1200:
+        self.x += math.cos(math.radians(self.direction)) * 5
+        self.y += math.sin(math.radians(self.direction)) * 5
+        self.rect.x = self.x + 32
+        self.rect.y = self.y + 32
+        self.distance += 5
+        if self.distance > 500:
             self.kill()
         for i in all_sprites:
             if pygame.sprite.collide_rect(self, i) and i != self and not (
-                    type(i) in [Tank, Turret, Bullet] and i.team == self.team):
+                    type(i) in [Tank, Turret, Bullet] and i.team == self.team) and type(i) is not Bullet and not (
+                    type(i) is Obstacle and i.skips_bullets):
                 i.health -= self.damage
                 self.kill()
 
@@ -410,8 +409,8 @@ class Maps:
 
     """создание объектов на карте"""
 
-    def create_obj(self, x, y, image, can_break):
-        Obstacle(x, y, image, self.cell_size, can_break)
+    def create_obj(self, x, y, image, can_break, skips_bullets=0):
+        Obstacle(x, y, image, self.cell_size, can_break, skips_bullets)
 
     """обновление карты"""
 
@@ -557,7 +556,7 @@ class Maps:
                     self.create_obj(x, y, self.wood_wall, 1)
                 if self.map[y][x] == '~':
                     self.fill_ground_png(x, y)
-                    self.create_obj(x, y, self.water, 0)
+                    self.create_obj(x, y, self.water, 0, 1)
 
     """Для заполения пола у ломающихся и не полностью заполненных объектов"""
 
@@ -585,7 +584,6 @@ if __name__ == '__main__':
     map.generate()
     # Создаем танк игрока
     player = Tank(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
-    player.kill()
 
     # Создаем танк врага
     enemies.add(Tank(96 - 288 + 48, 96 - 288 + 48, ai='enemy', team='enemy'))
