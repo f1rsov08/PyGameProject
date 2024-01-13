@@ -4,6 +4,9 @@ pygame.init()
 size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
 
+class Main_Menu:
+    pass
+
 
 class Button:
     def __init__(self, size, pos, color, text, color_text, size_font):
