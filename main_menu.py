@@ -55,6 +55,16 @@ class Button:
         self.button.blit(self.output_text, self.auto_font_pos)
         self.draw()
 
+    def draw(self):
+        self.mouse_pos = pygame.mouse.get_pos()
+        self.click = pygame.mouse.get_pressed()
+        if self.x <= self.mouse_pos[0] <= self.x + self.width and self.y <= self.mouse_pos[1] <= self.y + self.height:
+            self.aimed_button_color()
+            if self.click[0] == 1:
+                print('НАЖАЛ')
+        else:
+            self.not_aimed_button_color()
+
 
 clock = pygame.time.Clock()
 running = True
