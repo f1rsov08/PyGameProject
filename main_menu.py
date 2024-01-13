@@ -50,6 +50,11 @@ class Button:
         self.button.fill(self.color)
         pygame.draw.rect(self.button, 'white', (0, 0, self.width, self.height), 2)
 
+    def update(self):
+        screen.blit(self.button, (self.x, self.y))
+        self.button.blit(self.output_text, self.auto_font_pos)
+        self.draw()
+
 
 clock = pygame.time.Clock()
 running = True
