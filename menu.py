@@ -18,20 +18,23 @@ def full_screen():
         screen = pygame.display.set_mode(size_full_screen, pygame.FULLSCREEN)
         settings.__init__()
         settings.create()
+        select_lvl.__init__()
+        select_lvl.create()
         full_screen_coef = 0
     else:
         size = width, height = 800, 600
         screen = pygame.display.set_mode(size)
         settings.__init__()
         settings.create()
+        select_lvl.__init__()
+        select_lvl.create()
         full_screen_coef = 1
 
 def back():
     global current_type_tab
-    if current_type_tab == 'Settings':
-        current_type_tab = 'Main_Menu'
-        main_menu.__init__()
-        main_menu.create()
+    current_type_tab = 'Main_Menu'
+    main_menu.__init__()
+    main_menu.create()
 
 def quit():
     global running
@@ -70,7 +73,7 @@ class Settings:
             i.create()
 
     def draw(self):
-        screen.blit(self.background, (0,0))
+        screen.blit(self.background, (0, 0))
         for i in self.buttons:
             i.update()
 
@@ -94,7 +97,25 @@ class Main_Menu:
         for i in self.buttons:
             i.update()
 
+class Select_Level:
+    def __init__(self):
+        self.background = pygame.transform.scale(load_image('images/background_select_level.png'), (width, height))
+        print(width, height)
+        self.buttons = []
 
+    def create(self):
+        self.level_1 = Button((200, 200), (0.1 * width, 0.2 * height), 'black', 'Уровень 1', 'white', 30)
+        self.level_2 = Button((200, 200), (0.1 * width + 220, 0.2 * height), 'black', 'Уровень 2', 'white', 30)
+        self.level_3 = Button((200, 200), (0.11 * width + 440, 0.2 * height), 'black', 'Уровень 3', 'white', 30)
+        self.back = Button((200, 80), (width // 2 + 200, height // 2 + 200), 'black', 'Назад', 'white', 40)
+        self.buttons.extend([self.level_1, self.level_2, self.level_3, self.back])
+        for i in self.buttons:
+            i.create()
+
+    def draw(self):
+        screen.blit(self.background, (0, 0))
+        for i in self.buttons:
+            i.update()
 
 
 class Button:
@@ -183,6 +204,8 @@ main_menu = Main_Menu()
 main_menu.create()
 settings = Settings()
 settings.create()
+select_lvl = Select_Level()
+select_lvl.create()
 # but = Button((200, 100), (100, 100), 'black', "Играть", 'white', 40)
 # but.create()
 while running:
@@ -193,6 +216,8 @@ while running:
         main_menu.draw()
     if current_type_tab == 'Settings':
         settings.draw()
+    if current_type_tab == 'Game':
+        select_lvl.draw()
     print(current_type_tab)
     pygame.display.flip()
     clock.tick(60)
