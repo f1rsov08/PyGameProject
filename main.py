@@ -5,7 +5,7 @@ import pygame
 import random
 
 pygame.init()
-size = WIDTH, HEIGHT = 1000, 800
+size = WIDTH, HEIGHT = 800, 800
 MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt', 'data/maps/maze.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
@@ -72,9 +72,8 @@ class Camera:
         '''
         if self.attached_entity is not None and self.attached_entity.alive():
             self.x, self.y = self.attached_entity.x, self.attached_entity.y
-            self.angle = self.attached_entity.direction
 
-    def draw(self, screen, objs):
+    def draw(self, screen, objs, frame):
         '''
         Рисование объектов
         '''
@@ -83,7 +82,7 @@ class Camera:
         sy, ey = self.y - height // 2 - 136, self.y + height // 2 + 136
         for obj in objs:
             if sx < obj.x < ex and sy < obj.y < ey:
-                obj.draw(screen, self)
+                obj.draw(screen, self, frame)
 
     def move(self, x, y):
         self.x += math.cos(math.radians(self.angle)) * x
@@ -164,7 +163,7 @@ class Tank(Entity):
         '''
         self.direction += angle
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera, frame):
         '''
         Рисование танка
         '''
@@ -259,7 +258,7 @@ class Turret(Entity):
         self.ai = ai
         self.team = team
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera, frame):
         '''
         Рисование танка
         '''
@@ -328,14 +327,20 @@ class Obstacle(Entity):
 
     def __init__(self, x, y, image, cell, can_break=0):
         super().__init__(x, y, 0, [float('inf'), 25][can_break], obstacles)
-        self.image = image
-        self.rect = self.image.get_rect()
+        self.rect = pygame.Rect(0, 0, cell, cell)
+        rect = image.get_rect()
+        self.frames = []
+        for i in range(rect.w // cell):
+            frame_location = (cell * i, 0)
+            self.frames.append(image.subsurface(pygame.Rect(
+                frame_location, self.rect.size)))
+        self.image = self.frames[0]
         self.x = x * cell - 256
         self.y = y * cell - 256
         self.rect.x = self.x
         self.rect.y = self.y
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera, frame):
         '''
         Рисование коробки
         '''
@@ -345,6 +350,7 @@ class Obstacle(Entity):
         y = (camera.y - self.y) * -1 - 32
         # Рисуем
         screen.blit(self.image, (x + width // 2, y + height // 2))
+        self.image = self.frames[frame // 60 % len(self.frames)]
 
 
 class Bullet(Entity):
@@ -365,7 +371,7 @@ class Bullet(Entity):
         self.damage = damage
         self.team = team
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera, frame):
         '''
         Рисование снаряда
         '''
@@ -506,7 +512,7 @@ class Maps:
                                                     (self.cell_size, self.cell_size))
         if '~' in self.textures:
             self.water = pygame.transform.scale(load_image("images/water.png"),
-                                                (self.cell_size, self.cell_size))
+                                                (self.cell_size * 2, self.cell_size))
         if 'W' in self.textures:
             self.bush = pygame.transform.scale(load_image("images/bush.png"),
                                                (self.cell_size, self.cell_size))
@@ -574,24 +580,25 @@ if __name__ == '__main__':
     # передается главный экран где будут отображаться все объекты
     map = Maps(screen)
     # это для выбора карты или можно map.selectrandod)
-    map.select(3)
+    map.select(2)
     # для создания карты
     map.generate()
     # Создаем танк игрока
     player = Tank(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
+    player.kill()
 
     # Создаем танк врага
     enemies.add(Tank(96 - 288 + 48, 96 - 288 + 48, ai='enemy', team='enemy'))
     enemies.add(Turret(9 * 96 - 288 + 48, 9 * 96 - 288 + 48))
 
     # Создаем камеру
-    camera = Camera(0, 0, 0, player)
+    camera = Camera(5 * 96 - 288 + 48, 5 * 96 - 288 + 48, 0, player)
 
     # Добавляем танки во группу спрайтов
 
     # Часы
     clock = pygame.time.Clock()
-
+    frame = 0
     # Основной цикл
     running = True
     while running:
@@ -640,11 +647,12 @@ if __name__ == '__main__':
         s = max(WIDTH, HEIGHT) * 1.42  # Типа корень из двух
         test_screen = pygame.Surface((s, s))
         map.draw(test_screen, camera)
-        camera.draw(test_screen, all_sprites)
+        camera.draw(test_screen, all_sprites, frame)
         blit_rotate(screen, test_screen, (WIDTH // 2, HEIGHT // 2), (s // 2, s // 2), camera.angle)
         # Обновляем экран
         pygame.display.flip()
 
+        frame += 1
         # Ждем следующий кадр
         clock.tick(60)
 pygame.quit()
