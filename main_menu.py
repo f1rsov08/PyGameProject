@@ -3,9 +3,11 @@ import os
 import sys
 
 pygame.init()
-size = width, height = 800, 800
+disp = pygame.display.Info()
+size_full_screen = width1, height1 = (disp.current_w, disp.current_h)
+size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
-type = 'Main_Menu'
+type_tab = 'Main_Menu'
 
 
 def load_image(name, colorkey=None):
@@ -25,18 +27,44 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
 class Settings:
     def __init__(self):
-        pass
-    def
+        self.background = pygame.transform.scale(load_image('images/background_settings.png'), (width, height))
+        self.buttons = []
+
+    def create(self):
+        self.full_display = Button((200, 80), (width // 2 - 100, height // 2 - 200), 'black', 'Полноэкранный режим', 'white', 20)
+        self.back = Button((200, 80), (width // 2 + 200, height // 2 + 200), 'black', 'Назад', 'white', 40)
+        self.buttons.extend([self.full_display, self.back])
+        for i in self.buttons:
+            i.create()
+
+    def draw(self):
+        screen.blit(self.background, (0,0))
+        for i in self.buttons:
+            i.update()
+
+    def full_screen(self):
+        global screen
+        global width
+        global height
+        global size
+        global width1
+        global height1
+        size = width, height = width1, height1
+        screen = pygame.display.set_mode(size_full_screen, pygame.FULLSCREEN)
+        settings.__init__()
+        settings.create()
+
 
 
 class Main_Menu:
     def __init__(self):
+        self.background = pygame.transform.scale(load_image('images/background.png'), (width, height))
         self.buttons = []
 
     def create(self):
-        self.background = pygame.transform.scale(load_image('images/background.png'), (width, height))
         self.play = Button((200, 80), (width // 2 - 100, height // 2 + 30), 'black', 'Играть', 'white', 40)
         self.settings = Button((200, 80), (width // 2 - 100, height // 2 + 120), 'black', 'Настройки', 'white', 40)
         self.quit = Button((200, 80), (width // 2 - 100, height // 2 + 210), 'black', 'Выйти', 'white', 40)
@@ -48,6 +76,8 @@ class Main_Menu:
         screen.blit(self.background, (0, 0))
         for i in self.buttons:
             i.update()
+
+
 
 
 class Button:
@@ -113,11 +143,13 @@ class Button:
             self.not_aimed_button_color()
 
     def pressed(self):
+        global type_tab
         if self.input_text == 'Играть':
-            type = 'Game'
+            type_tab = 'Game'
         if self.input_text == 'Настройки':
-            type = 'Settings'
-
+            type_tab = 'Settings'
+        if self.input_text == 'Полноэкранный режим':
+            type_tab = 'Full-display'
 
 
 
@@ -126,16 +158,22 @@ running = True
 screen.fill('green')
 main_menu = Main_Menu()
 main_menu.create()
-settins = Settings()
+settings = Settings()
+settings.create()
 # but = Button((200, 100), (100, 100), 'black', "Играть", 'white', 40)
 # but.create()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    if type == 'Main_Menu':
+    if type_tab == 'Main_Menu':
         main_menu.draw()
-    if type == 'Settings'
+    if type_tab == 'Settings':
+        settings.draw()
+    if type_tab == 'Full-display':
+        settings.full_screen()
+        type_tab = 'Settings'
+    print(type_tab)
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
