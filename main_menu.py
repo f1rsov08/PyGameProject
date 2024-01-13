@@ -9,6 +9,13 @@ size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
 type_tab = 'Main_Menu'
 
+def full_screen():
+    global screen, width, height,size, width1, height1
+    size = width, height = width1, height1
+    screen = pygame.display.set_mode(size_full_screen, pygame.FULLSCREEN)
+    settings.__init__()
+    settings.create()
+
 
 def load_image(name, colorkey=None):
     '''
@@ -44,18 +51,6 @@ class Settings:
         screen.blit(self.background, (0,0))
         for i in self.buttons:
             i.update()
-
-    def full_screen(self):
-        global screen
-        global width
-        global height
-        global size
-        global width1
-        global height1
-        size = width, height = width1, height1
-        screen = pygame.display.set_mode(size_full_screen, pygame.FULLSCREEN)
-        settings.__init__()
-        settings.create()
 
 
 
