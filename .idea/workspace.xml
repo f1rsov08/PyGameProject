@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="добавил функцию back для возвращения в меню">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" afterDir="false" />
+    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Добавил класс Select_level и функцию  quit">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/menu.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -491,7 +491,23 @@
       <option name="project" value="LOCAL" />
       <updated>1705168316730</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="Фоны">
+      <option name="closed" value="true" />
+      <created>1705169582867</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1705169582867</updated>
+    </task>
+    <task id="LOCAL-00036" summary="Добавил класс Select_level и функцию  quit">
+      <option name="closed" value="true" />
+      <created>1705170973152</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1705170973152</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -506,8 +522,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Добавил информацию о текстурах" />
-    <MESSAGE value="Добавил новую карту" />
     <MESSAGE value="Добавил метод select для выбора карты" />
     <MESSAGE value="Работающая версия программы" />
     <MESSAGE value="Работающая версия программы с систематизацией методов и классов" />
@@ -531,6 +545,8 @@
     <MESSAGE value="метод full_screen для полного экрана" />
     <MESSAGE value="вывел full_screen  в отдельную функцию" />
     <MESSAGE value="добавил функцию back для возвращения в меню" />
-    <option name="LAST_COMMIT_MESSAGE" value="добавил функцию back для возвращения в меню" />
+    <MESSAGE value="Фоны" />
+    <MESSAGE value="Добавил класс Select_level и функцию  quit" />
+    <option name="LAST_COMMIT_MESSAGE" value="Добавил класс Select_level и функцию  quit" />
   </component>
 </project>

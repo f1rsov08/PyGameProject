@@ -16,19 +16,19 @@ def full_screen():
     if full_screen_coef:
         size = width, height = width1, height1
         screen = pygame.display.set_mode(size_full_screen, pygame.FULLSCREEN)
-        settings.__init__()
-        settings.create()
-        select_lvl.__init__()
-        select_lvl.create()
         full_screen_coef = 0
+        update_after_change_size_screen()
     else:
         size = width, height = 800, 600
         screen = pygame.display.set_mode(size)
-        settings.__init__()
-        settings.create()
-        select_lvl.__init__()
-        select_lvl.create()
+        update_after_change_size_screen()
         full_screen_coef = 1
+
+def update_after_change_size_screen():
+    settings.__init__()
+    settings.create()
+    select_lvl.__init__()
+    select_lvl.create()
 
 def back():
     global current_type_tab
