@@ -1,11 +1,52 @@
 import pygame
+import os
+import sys
 
 pygame.init()
 size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
 
+def load_image(name, colorkey=None):
+    '''
+    Функция для загрузки изображений
+    '''
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
+
+
 class Main_Menu:
-    pass
+    def __init__(self):
+        self.buttons = []
+    def create(self):
+        self.background = pygame.transform.scale(load_image('images/background.png'), (width, height))
+        self.play = Button((200, 80), (width // 2 - 100, height // 2 + 30), 'black', 'Играть', 'white', 40)
+        self.settings = Button((200, 80), (width // 2 - 100, height // 2 + 120), 'black', 'Настройки', 'white', 40)
+        self.quit = Button((200, 80), (width // 2 - 100, height // 2 + 210), 'black', 'Выйти', 'white', 40)
+        self.buttons.extend([self.play, self.settings, self.quit])
+        for i in self.buttons:
+            i.create()
+
+
+
+    def draw(self):
+        screen.blit(self.background, (0, 0))
+        for i in self.buttons:
+            i.update()
+
+
+
+
 
 
 class Button:
@@ -72,13 +113,15 @@ class Button:
 clock = pygame.time.Clock()
 running = True
 screen.fill('green')
+main_menu = Main_Menu()
+main_menu.create()
 #but = Button((200, 100), (100, 100), 'black', "Играть", 'white', 40)
 #but.create()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    #but.update()
+    main_menu.draw()
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()

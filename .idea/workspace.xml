@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Класс Button">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" afterDir="false" />
+    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="класс Main_Menu">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main_menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_menu.py" afterDir="false" />
     </list>
@@ -380,7 +379,79 @@
       <option name="project" value="LOCAL" />
       <updated>1705142238382</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="сделал __init__">
+      <option name="closed" value="true" />
+      <created>1705155258288</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1705155258288</updated>
+    </task>
+    <task id="LOCAL-00022" summary="сделал метод create">
+      <option name="closed" value="true" />
+      <created>1705155292468</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1705155292468</updated>
+    </task>
+    <task id="LOCAL-00023" summary="сделал метод aimed_button_color для изменения цвета прр наведении курсора">
+      <option name="closed" value="true" />
+      <created>1705155327846</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1705155327846</updated>
+    </task>
+    <task id="LOCAL-00024" summary="сделал метод not_aimed_button_color для изменения цвета прр наведении курсора">
+      <option name="closed" value="true" />
+      <created>1705155350692</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1705155350692</updated>
+    </task>
+    <task id="LOCAL-00025" summary="сделал метод create_font для создания текста">
+      <option name="closed" value="true" />
+      <created>1705155386794</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1705155386794</updated>
+    </task>
+    <task id="LOCAL-00026" summary="метод create_field_button для создания рамки кнопки">
+      <option name="closed" value="true" />
+      <created>1705155444179</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1705155444179</updated>
+    </task>
+    <task id="LOCAL-00027" summary="метод update для отрисовки">
+      <option name="closed" value="true" />
+      <created>1705155473341</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1705155473341</updated>
+    </task>
+    <task id="LOCAL-00028" summary="метод draw для отрисвоки">
+      <option name="closed" value="true" />
+      <created>1705155493212</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1705155493212</updated>
+    </task>
+    <task id="LOCAL-00029" summary="класс Main_Menu">
+      <option name="closed" value="true" />
+      <created>1705156365564</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1705156365564</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -395,13 +466,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Тест" />
-    <MESSAGE value="Сделал игровое поле с текстурами, на котором можно кататься на танке" />
-    <MESSAGE value=" Заменил png картинку barrier.png на brick_barrier.png" />
-    <MESSAGE value="Обновил текстуры игры" />
-    <MESSAGE value="Сделал текстовый файл с картой игры" />
-    <MESSAGE value="Добавил метод select_random для рандомного выбора карты" />
-    <MESSAGE value="Добавил метод load_textures для загрузки нужных текстурных файлов png" />
     <MESSAGE value="Добавил метод draw_field для рисования карты, изменил метод для обновления кадров для карты uodate" />
     <MESSAGE value="Добавил метод create_size_map для создания плоскости surface под размер карты" />
     <MESSAGE value="Обновил название картинки на sandfloor.png" />
@@ -418,6 +482,15 @@
     <MESSAGE value="Слияние" />
     <MESSAGE value="Исправил баг в методе fill_ground_png" />
     <MESSAGE value="Класс Button" />
-    <option name="LAST_COMMIT_MESSAGE" value="Класс Button" />
+    <MESSAGE value="сделал __init__" />
+    <MESSAGE value="сделал метод create" />
+    <MESSAGE value="сделал метод aimed_button_color для изменения цвета прр наведении курсора" />
+    <MESSAGE value="сделал метод not_aimed_button_color для изменения цвета прр наведении курсора" />
+    <MESSAGE value="сделал метод create_font для создания текста" />
+    <MESSAGE value="метод create_field_button для создания рамки кнопки" />
+    <MESSAGE value="метод update для отрисовки" />
+    <MESSAGE value="метод draw для отрисвоки" />
+    <MESSAGE value="класс Main_Menu" />
+    <option name="LAST_COMMIT_MESSAGE" value="класс Main_Menu" />
   </component>
 </project>
