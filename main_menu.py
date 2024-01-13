@@ -17,6 +17,9 @@ class Button:
         self.x = pos[0]
         self.y = pos[1]
 
+    def create(self):
+        self.create_field_button()
+        self.create_font()
 
 
 clock = pygame.time.Clock()
