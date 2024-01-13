@@ -5,7 +5,7 @@ import pygame
 import random
 
 pygame.init()
-size = width, height = 800, 800
+size11 = WIDTH, HEIGHT = 800, 600
 MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt']
 disp = pygame.display.Info()
 size_full_screen = width1, height1 = (disp.current_w, disp.current_h)
@@ -15,6 +15,7 @@ screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
 obstacles = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
 full_screen_coef = 1
 current_type_tab = 'Main_Menu'
 
@@ -249,6 +250,27 @@ class Button:
             map.generate()
             ##
 
+
+def blit_rotate(surf, image, pos, origin_pos, angle):
+    '''
+    Поворот спрайтов относительно центра
+    '''
+    image_rect = image.get_rect(topleft=(pos[0] - origin_pos[0], pos[1] - origin_pos[1]))
+    offset_center_to_pivot = pygame.math.Vector2(pos) - image_rect.center
+    rotated_offset = offset_center_to_pivot.rotate(-angle)
+    rotated_image_center = (pos[0] - rotated_offset.x, pos[1] - rotated_offset.y)
+    rotated_image = pygame.transform.rotate(image, angle)
+    rotated_image_rect = rotated_image.get_rect(center=rotated_image_center)
+    surf.blit(rotated_image, rotated_image_rect)
+
+
+def distance(x1, y1, x2, y2):
+    '''
+    Расчет расстояния между точками
+    '''
+    return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+
 class Camera:
     '''
     Камера
@@ -266,19 +288,25 @@ class Camera:
         '''
         Обновление камеры
         '''
-        if self.attached_entity is not None:
+        if self.attached_entity is not None and self.attached_entity.alive():
             self.x, self.y = self.attached_entity.x, self.attached_entity.y
-            self.angle = self.attached_entity.direction
 
-    def draw(self, screen, objs):
+    def draw(self, screen, objs, frame):
         '''
         Рисование объектов
         '''
+        width, height = screen.get_width(), screen.get_height()
         sx, ex = self.x - width // 2 - 136, self.x + width // 2 + 136
         sy, ey = self.y - height // 2 - 136, self.y + height // 2 + 136
         for obj in objs:
             if sx < obj.x < ex and sy < obj.y < ey:
-                obj.draw(screen, self)
+                obj.draw(screen, self, frame)
+
+    def move(self, x, y):
+        self.x += math.cos(math.radians(self.angle)) * x
+        self.y += math.sin(math.radians(self.angle)) * x
+        self.x += math.cos(math.radians(self.angle + 90)) * y
+        self.y += math.sin(math.radians(self.angle + 90)) * y
 
 
 class Entity(pygame.sprite.Sprite):
@@ -353,29 +381,23 @@ class Tank(Entity):
         '''
         self.direction += angle
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera, frame):
         '''
         Рисование танка
         '''
+        width, height = screen.get_width(), screen.get_height()
         # Вычисляем координаты танка на экране при центре в (0, 0)
         x = (camera.x - self.x) * -1
         y = (camera.y - self.y) * -1
-        d = (x ** 2 + y ** 2) ** 0.5
-        if x < 0:
-            d *= -1
-        try:
-            angle = math.degrees(math.atan(y / x)) - camera.angle
-        except ZeroDivisionError:
-            angle = -camera.angle
-        x = d * math.cos(math.radians(angle))
-        y = d * math.sin(math.radians(angle))
         # Получаем направление к цели
         target_angle = self.get_target(camera)
+        if target_angle is None:
+            target_angle = self.direction - 90
         # Рисуем
         blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (32, 32),
-                    self.direction * -1 + camera.angle)
+                    self.direction * -1)
         blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
-                    target_angle * -1 + camera.angle - 90)
+                    target_angle * -1 - 90)
 
     def get_target(self, camera=None):
         '''
@@ -396,7 +418,7 @@ class Tank(Entity):
                 target_x, target_y = players[0].coords()
                 target_x, target_y = target_x - self.x, target_y - self.y
             else:
-                target_x, target_y = 0, 0
+                return None
         else:
             # Если кто-то другой, то 0, 0
             target_x, target_y = 0, 0
@@ -416,8 +438,103 @@ class Tank(Entity):
 
     def shoot(self, camera=None):
         if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
-            all_sprites.add(Bullet(self.x, self.y, self.get_target(camera), self.team))
+            all_sprites.add(Bullet(self.x, self.y, self.get_target(camera), 25, 'big', self.team))
             self.last_shot_time = pygame.time.get_ticks()
+
+    def update(self):
+        super().update()
+        if self.ai == 'enemy':
+            target = self.get_target()
+            if target:
+                self.direction = target + 90
+                self.move()
+                self.shoot()
+            else:
+                self.turn(5)
+
+
+class Turret(Entity):
+    '''
+    Турель
+    '''
+
+    def __init__(self, x, y, direction=0, health=100, reload_time=250, ai='enemy', team='enemy'):
+        super().__init__(x, y, direction, health, tanks)
+        # Загрузка изображений
+        self.image_track = pygame.transform.scale(load_image("images/turret_track.png"), (64, 64))
+        self.image_turret = pygame.transform.scale(load_image("images/turret_turret.png"), (128, 128))
+        self.rect = self.image_track.get_rect()
+        # Задаем координаты турели
+        self.rect.x = self.x
+        self.rect.y = self.y
+        # Задаем направление башни турели
+        self.turret_direction = direction
+        # Время перезарядки
+        self.reload_time = reload_time
+        self.last_shot_time = 0
+        # ИИ
+        self.ai = ai
+        self.team = team
+
+    def draw(self, screen, camera, frame):
+        '''
+        Рисование танка
+        '''
+        width, height = screen.get_width(), screen.get_height()
+        # Вычисляем координаты танка на экране при центре в (0, 0)
+        x = (camera.x - self.x) * -1
+        y = (camera.y - self.y) * -1
+        # Получаем направление к цели
+        target_angle = self.get_target()
+        if target_angle is None:
+            target_angle = self.direction - 90
+        # Рисуем
+        blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (32, 32),
+                    self.direction * -1)
+        blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
+                    target_angle * -1 - 90)
+
+    def get_target(self):
+        '''
+        Получаем цель танка
+        '''
+        if self.ai == 'enemy':
+            # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
+            players = \
+                sorted(filter(lambda sprite: type(sprite) is Tank and sprite.team == 'player', all_sprites),
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
+            if players:
+                target_x, target_y = players[0].coords()
+                target_x, target_y = target_x - self.x, target_y - self.y
+            else:
+                return None
+        else:
+            # Если кто-то другой, то 0, 0
+            target_x, target_y = 0, 0
+        try:
+            target_angle = math.degrees(math.atan(target_y / target_x))
+        except ZeroDivisionError:
+            if target_y > 0:
+                target_angle = 90
+            elif target_y < 0:
+                target_angle = 270
+            else:
+                target_angle = 0
+        else:
+            if target_x < 0:
+                target_angle += 180
+        return target_angle
+
+    def shoot(self):
+        if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
+            all_sprites.add(Bullet(self.x, self.y, self.get_target(), 10, 'small', self.team))
+            self.last_shot_time = pygame.time.get_ticks()
+
+    def update(self):
+        super().update()
+        if self.ai == 'enemy':
+            if self.get_target():
+                self.shoot()
 
 
 class Obstacle(Entity):
@@ -425,34 +542,33 @@ class Obstacle(Entity):
     Препятсвтие
     '''
 
-    def __init__(self, x, y, image, cell, can_break=0):
+    def __init__(self, x, y, image, cell, can_break=0, skips_bullets=0):
         super().__init__(x, y, 0, [float('inf'), 25][can_break], obstacles)
-        self.image = image
-        self.rect = self.image.get_rect()
+        self.rect = pygame.Rect(0, 0, cell, cell)
+        rect = image.get_rect()
+        self.frames = []
+        for i in range(rect.w // cell):
+            frame_location = (cell * i, 0)
+            self.frames.append(image.subsurface(pygame.Rect(
+                frame_location, self.rect.size)))
+        self.image = self.frames[0]
         self.x = x * cell - 256
         self.y = y * cell - 256
         self.rect.x = self.x
         self.rect.y = self.y
+        self.skips_bullets = skips_bullets
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera, frame):
         '''
         Рисование коробки
         '''
+        width, height = screen.get_width(), screen.get_height()
         # Вычисляем координаты коробки на экране при центре в (0, 0)
-        x = (camera.x - self.x) * -1
-        y = (camera.y - self.y) * -1
-        d = (x ** 2 + y ** 2) ** 0.5
-        if x < 0:
-            d *= -1
-        try:
-            angle = math.degrees(math.atan(y / x)) - camera.angle
-        except ZeroDivisionError:
-            angle = -camera.angle
-        x = d * math.cos(math.radians(angle))
-        y = d * math.sin(math.radians(angle))
+        x = (camera.x - self.x) * -1 - 32
+        y = (camera.y - self.y) * -1 - 32
         # Рисуем
-        blit_rotate(screen, self.image, (x + width // 2, y + height // 2), (32, 32),
-                    self.direction * -1 + camera.angle)
+        screen.blit(self.image, (x + width // 2, y + height // 2))
+        self.image = self.frames[frame // 60 % len(self.frames)]
 
 
 class Bullet(Entity):
@@ -460,49 +576,45 @@ class Bullet(Entity):
     Снаряд
     '''
 
-    def __init__(self, x, y, direction=0, team='player'):
-        super().__init__(x, y, direction, -1)
-        self.bullet = pygame.transform.scale(load_image("images/bullet.png"), (28, 8))
-        self.rect = self.bullet.get_rect()
-        self.rect.x = self.x
-        self.rect.y = self.y
+    def __init__(self, x, y, direction=0, damage=25, size='big', team='player'):
+        super().__init__(x, y, direction, float('inf'))
+        if size == 'big':
+            self.bullet = pygame.transform.scale(load_image(f"images/big_bullet.png"), (28, 8))
+        elif size == 'small':
+            self.bullet = pygame.transform.scale(load_image(f"images/small_bullet.png"), (8, 8))
+        self.rect = pygame.Rect(self.x, self.y, 8, 8)
         self.distance = 0
+        self.damage = damage
         self.team = team
 
-    def draw(self, screen, camera):
+    def draw(self, screen, camera, frame):
         '''
         Рисование снаряда
         '''
+        width, height = screen.get_width(), screen.get_height()
         # Вычисляем координаты снаряда на экране при центре в (0, 0)
         x = (camera.x - self.x) * -1
         y = (camera.y - self.y) * -1
-        d = (x ** 2 + y ** 2) ** 0.5
-        if x < 0:
-            d *= -1
-        try:
-            angle = math.degrees(math.atan(y / x)) - camera.angle
-        except ZeroDivisionError:
-            angle = -camera.angle
-        x = d * math.cos(math.radians(angle))
-        y = d * math.sin(math.radians(angle))
         # Рисуем
-        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (14, 4),
-                    self.direction * -1 + camera.angle)
+        blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (4, 4),
+                    self.direction * -1)
 
     def update(self):
         '''
-        Перемещение снарядаa
+        Перемещение снаряда
         '''
-        self.x += math.cos(math.radians(self.direction)) * 3
-        self.y += math.sin(math.radians(self.direction)) * 3
-        self.rect.x = self.x
-        self.rect.y = self.y
-        self.distance += 3
-        if self.distance > 1200:
+        self.x += math.cos(math.radians(self.direction)) * 5
+        self.y += math.sin(math.radians(self.direction)) * 5
+        self.rect.x = self.x + 32
+        self.rect.y = self.y + 32
+        self.distance += 5
+        if self.distance > 500:
             self.kill()
         for i in all_sprites:
-            if pygame.sprite.collide_rect(self, i) and i != self and not (type(i) is Tank and i.team == self.team):
-                i.health -= 25
+            if pygame.sprite.collide_rect(self, i) and i != self and not (
+                    type(i) in [Tank, Turret, Bullet] and i.team == self.team) and type(i) is not Bullet and not (
+                    type(i) is Obstacle and i.skips_bullets):
+                i.health -= self.damage
                 self.kill()
 
 
@@ -515,27 +627,17 @@ class Maps:
 
     """создание объектов на карте"""
 
-    def create_obj(self, x, y, image, can_break):
-        Obstacle(x, y, image, self.cell_size, can_break)
+    def create_obj(self, x, y, image, can_break, skips_bullets=0):
+        Obstacle(x, y, image, self.cell_size, can_break, skips_bullets)
 
     """обновление карты"""
 
-    def draw(self, camera):
-        x = -camera.x + width // 2 - 96 * 7 + 16
-        y = -camera.y + height // 2 - 96 * 7 + 16
-        d = (x ** 2 + y ** 2) ** 0.5
-        if x < 0:
-            d *= -1
-        try:
-            angle = math.degrees(math.atan(y / x)) - camera.angle
-        except ZeroDivisionError:
-            angle = -camera.angle
-        x = d * math.cos(math.radians(angle))
-        y = d * math.sin(math.radians(angle))
-
+    def draw(self, screen, camera):
+        width, height = screen.get_width(), screen.get_height()
+        x = -camera.x - 288
+        y = -camera.y - 288
         # Рисуем
-        blit_rotate(screen, self.field, (x + width // 2, y + height // 2), (32, 32),
-                    camera.angle)
+        screen.blit(self.field, (x + width // 2, y + height // 2))
 
     """загрузка карты из txt формата"""
 
@@ -627,7 +729,7 @@ class Maps:
                                                     (self.cell_size, self.cell_size))
         if '~' in self.textures:
             self.water = pygame.transform.scale(load_image("images/water.png"),
-                                                (self.cell_size, self.cell_size))
+                                                (self.cell_size * 2, self.cell_size))
         if 'W' in self.textures:
             self.bush = pygame.transform.scale(load_image("images/bush.png"),
                                                (self.cell_size, self.cell_size))
@@ -672,7 +774,7 @@ class Maps:
                     self.create_obj(x, y, self.wood_wall, 1)
                 if self.map[y][x] == '~':
                     self.fill_ground_png(x, y)
-                    self.create_obj(x, y, self.water, 0)
+                    self.create_obj(x, y, self.water, 0, 1)
 
     """Для заполения пола у ломающихся и не полностью заполненных объектов"""
 
@@ -691,6 +793,7 @@ class Maps:
         self.field.blit(list_of_number_plates[-1][1], (x * self.cell_size, y * self.cell_size))
 
 
+
 if __name__ == '__main__':
     main_menu = Main_Menu()
     main_menu.create()
@@ -699,40 +802,61 @@ if __name__ == '__main__':
     select_lvl = Select_Level()
     select_lvl.create()
     map = Maps(screen)
-    ## это для выбора карты или можно map.selectrandom()
-    ## Создаем танк игрока
-    player = Tank(150, 150)
-    enemy_tank = Tank(40, 40, ai='enemy', team='enemy')
-    camera = Camera(0, 0, 0, player)
-#
+    # это для выбора карты или можно map.selectrandod)
+    map.select(2)
+    # для создания карты
+    map.generate()
+    # Создаем танк игрока
+    player = Tank(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
+
+    # Создаем танк врага
+    enemies.add(Tank(96 - 288 + 48, 96 - 288 + 48, ai='enemy', team='enemy'))
+    enemies.add(Turret(9 * 96 - 288 + 48, 9 * 96 - 288 + 48))
+
+    # Создаем камеру
+    camera = Camera(5 * 96 - 288 + 48, 5 * 96 - 288 + 48, 0, player)
    # Добавляем танки во группу спрайтов
 #
     ## Часы
     clock = pygame.time.Clock()
+    frame = 0
 
     # Основной цикл
     running = True
     while running:
-        # Проходимся по ивентам
         for event in pygame.event.get():
             # Если окно закрыли, то завершаем цикл
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+                if event.button == 1 and player.alive():
                     player.shoot(camera)
 
         # Получаем кнопки, которые нажаты
         keys = pygame.key.get_pressed()
         # Управление на WASD
-        if keys[pygame.K_w]:
-            player.move(2)
-        if keys[pygame.K_s]:
-            player.move(-2)
-        if keys[pygame.K_a]:
-            player.turn(-1.5)
-        if keys[pygame.K_d]:
-            player.turn(1.5)
+        if player.alive():
+            if keys[pygame.K_w]:
+                player.move(2)
+            if keys[pygame.K_s]:
+                player.move(-2)
+            if keys[pygame.K_a]:
+                player.turn(-1.5)
+            if keys[pygame.K_d]:
+                player.turn(1.5)
+        else:
+            if keys[pygame.K_w]:
+                camera.move(0, -20)
+            if keys[pygame.K_s]:
+                camera.move(0, 20)
+            if keys[pygame.K_a]:
+                camera.move(-20, 0)
+            if keys[pygame.K_d]:
+                camera.move(20, 0)
+            if keys[pygame.K_q]:
+                camera.angle -= 1.5
+            if keys[pygame.K_e]:
+                camera.angle += 1.5
 
 
         if current_type_tab == 'Main_Menu':
@@ -742,19 +866,22 @@ if __name__ == '__main__':
         if current_type_tab == 'Select_level':
             select_lvl.draw()
         if current_type_tab == 'Game':
-            enemy_tank.turn(1.5)
-            enemy_tank.shoot()
-
             screen.fill((0, 0, 0))
-            # Обновляем камеру
+            # Обновляем
             all_sprites.update()
-
-            # Обновление карты
             camera.update()
 
             # Рисуем все что надо
-            map.draw(camera)
-            camera.draw(screen, all_sprites)
+            s = max(width, height) * 1.42  # Типа корень из двух
+            test_screen = pygame.Surface((s, s))
+            map.draw(test_screen, camera)
+            camera.draw(test_screen, all_sprites, frame)
+            blit_rotate(screen, test_screen, (WIDTH // 2, HEIGHT // 2), (s // 2, s // 2), camera.angle)
+            # Обновляем экран
+            pygame.display.flip()
+
+            frame += 1
+            # Ждем следующий кадр
 
         # Обновляем экран
         pygame.display.flip()

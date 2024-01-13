@@ -5,7 +5,7 @@ import sys
 pygame.init()
 disp = pygame.display.Info()
 size_full_screen = width1, height1 = (disp.current_w, disp.current_h)
-size = width, height = 800, 600
+size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
 full_screen_coef = 1
 current_type_tab = 'Main_Menu'
@@ -19,7 +19,7 @@ def full_screen():
         full_screen_coef = 0
         update_after_change_size_screen()
     else:
-        size = width, height = 800, 600
+        size = width, height = 800, 800
         screen = pygame.display.set_mode(size)
         update_after_change_size_screen()
         full_screen_coef = 1
