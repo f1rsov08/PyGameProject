@@ -26,6 +26,19 @@ class Button:
         pygame.draw.rect(self.button, (250, 250, 250), (0, 0, self.width, self.height), 3)
         self.button.blit(self.output_text, self.auto_font_pos)
 
+    def create(self):
+        self.create_field_button()
+        self.create_font()
+
+    def aimed_button_color(self):
+        self.button.fill((10, 10, 10))
+        pygame.draw.rect(self.button, (250, 250, 250), (0, 0, self.width, self.height), 3)
+        self.button.blit(self.output_text, self.auto_font_pos)
+
+    def not_aimed_button_color(self):
+        self.button.fill('black')
+        pygame.draw.rect(self.button, 'white', (0, 0, self.width, self.height), 2)
+        self.button.blit(self.output_text, self.auto_font_pos)
 
 clock = pygame.time.Clock()
 running = True
