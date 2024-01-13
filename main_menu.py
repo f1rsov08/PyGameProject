@@ -5,6 +5,8 @@ import sys
 pygame.init()
 size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
+type = 'Main_Menu'
+
 
 def load_image(name, colorkey=None):
     '''
@@ -23,11 +25,16 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+class Settings:
+    def __init__(self):
+        pass
+    def
 
 
 class Main_Menu:
     def __init__(self):
         self.buttons = []
+
     def create(self):
         self.background = pygame.transform.scale(load_image('images/background.png'), (width, height))
         self.play = Button((200, 80), (width // 2 - 100, height // 2 + 30), 'black', 'Играть', 'white', 40)
@@ -37,16 +44,10 @@ class Main_Menu:
         for i in self.buttons:
             i.create()
 
-
-
     def draw(self):
         screen.blit(self.background, (0, 0))
         for i in self.buttons:
             i.update()
-
-
-
-
 
 
 class Button:
@@ -87,7 +88,8 @@ class Button:
     def create_font(self):
         self.font = pygame.font.Font('data/fonts/TunnelFront.ttf', self.font_size)
         self.output_text = self.font.render(self.text, True, self.color_text)
-        self.auto_font_pos = (self.width // 2 - self.font.size(self.text)[0] // 2, self.height // 2 - self.font.size(self.text)[1] // 2)
+        self.auto_font_pos = (
+        self.width // 2 - self.font.size(self.text)[0] // 2, self.height // 2 - self.font.size(self.text)[1] // 2)
 
     def create_field_button(self):
         self.button = pygame.surface.Surface((self.width, self.height))
@@ -105,9 +107,18 @@ class Button:
         if self.x <= self.mouse_pos[0] <= self.x + self.width and self.y <= self.mouse_pos[1] <= self.y + self.height:
             self.aimed_button_color()
             if self.click[0] == 1:
-                print('НАЖАЛ')
+                self.pressed()
+
         else:
             self.not_aimed_button_color()
+
+    def pressed(self):
+        if self.input_text == 'Играть':
+            type = 'Game'
+        if self.input_text == 'Настройки':
+            type = 'Settings'
+
+
 
 
 clock = pygame.time.Clock()
@@ -115,13 +126,16 @@ running = True
 screen.fill('green')
 main_menu = Main_Menu()
 main_menu.create()
-#but = Button((200, 100), (100, 100), 'black', "Играть", 'white', 40)
-#but.create()
+settins = Settings()
+# but = Button((200, 100), (100, 100), 'black', "Играть", 'white', 40)
+# but.create()
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    main_menu.draw()
+    if type == 'Main_Menu':
+        main_menu.draw()
+    if type == 'Settings'
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
