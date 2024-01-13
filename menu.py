@@ -33,7 +33,7 @@ def back():
         main_menu.__init__()
         main_menu.create()
 
-def quit()
+def quit():
     global running
     running = False
 
@@ -170,6 +170,7 @@ class Button:
         if self.input_text == 'Назад':
             back()
         if self.input_text == 'Выйти':
+            quit()
 
 
 
