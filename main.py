@@ -248,6 +248,11 @@ class Button:
             map.select(2)
             ## # для создания карты
             map.generate()
+        if self.input_text == 'Уровень 2':
+            current_type_tab = 'Game'
+            map.select(1)
+            map.generate()
+
             ##
 
 
@@ -407,7 +412,7 @@ class Tank(Entity):
         if self.ai == 'player':
             # Если танком управляет игрок, то функция возвращает координаты мыши
             x, y = pygame.mouse.get_pos()
-            target_x, target_y = x - width // 2, y - height // 2
+            target_x, target_y = x - WIDTH // 2, y - HEIGHT // 2
             addition = camera.angle
         elif self.ai == 'enemy':
             # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
@@ -872,7 +877,7 @@ if __name__ == '__main__':
             camera.update()
 
             # Рисуем все что надо
-            s = max(width, height) * 1.42  # Типа корень из двух
+            s = max(WIDTH, HEIGHT) * 1.42  # Типа корень из двух
             test_screen = pygame.Surface((s, s))
             map.draw(test_screen, camera)
             camera.draw(test_screen, all_sprites, frame)

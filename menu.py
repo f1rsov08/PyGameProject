@@ -218,7 +218,6 @@ while running:
         settings.draw()
     if current_type_tab == 'Select_level':
         select_lvl.draw()
-    print(current_type_tab)
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
