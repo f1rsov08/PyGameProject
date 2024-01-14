@@ -3,9 +3,10 @@ import sys
 import math
 import pygame
 import random
+from copy import deepcopy
 
 pygame.init()
-size = WIDTH, HEIGHT = 1024, 680
+size = WIDTH, HEIGHT = 1056, 1056
 MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt', 'data/maps/maze.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
@@ -52,6 +53,41 @@ def distance(x1, y1, x2, y2):
     Расчет расстояния между точками
     '''
     return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+
+class PathFinder:
+    def __init__(self, map):
+        self.map = deepcopy(map.obstacle_map)
+
+    def make_distance_map(self, end_x, end_y):
+        near_cells = [(-1, 0), (0, -1), (1, 0), (0, 1)]
+        end_x, end_y = int((end_x + 288) // 96), int((end_y + 288) // 96)
+        self.map[end_y][end_x] = 0
+        while any([None in i for i in self.map]):
+            changes = []
+            for y in range(len(self.map)):
+                for x in range(len(self.map[0])):
+                    if self.map[y][x] is None:
+                        min_number = float('inf')
+                        for i in near_cells:
+                            if 0 <= x + i[0] < len(self.map[0]) and 0 <= y + i[1] < len(self.map) and \
+                                    self.map[y + i[1]][x + i[0]] is not None and \
+                                    self.map[y + i[1]][x + i[0]] < min_number:
+                                min_number = self.map[y + i[1]][x + i[0]]
+                        if min_number != float('inf'):
+                            changes.append((x, y, min_number + 1))
+            for i in changes:
+                self.map[i[1]][i[0]] = i[2]
+
+    def next_move(self, start_x, start_y):
+        near_cells = [(-1, 0), (0, -1), (1, 0), (0, 1)]
+        start_x, start_y = int((start_x + 288) // 96), int((start_y + 288) // 96)
+        min_x, min_y = start_x, start_y
+        for i in near_cells:
+            if 0 <= start_x + i[0] < len(self.map[0]) and 0 <= start_y + i[1] < len(self.map) and \
+                    self.map[start_y + i[1]][start_x + i[0]] < self.map[min_y][min_x]:
+                min_x, min_y = start_x + i[0], start_y + i[1]
+        return min_x * 96 - 288 + 48, min_y * 96 - 288 + 48
 
 
 class Camera:
@@ -216,7 +252,7 @@ class Tank(Entity):
         self.turning = 0
         self.moving = 0
 
-    def get_target(self, camera=None):
+    def get_target_angle(self, camera=None):
         '''
         Получаем цель танка
         '''
@@ -231,9 +267,16 @@ class Tank(Entity):
             players = \
                 sorted(filter(lambda sprite: type(sprite) is Tank and sprite.team == 'player', all_sprites),
                        key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
-            if players:
-                target_x, target_y = players[0].coords()
-                target_x, target_y = target_x - self.x, target_y - self.y
+            bonuses = \
+                sorted(filter(lambda sprite: type(sprite) is Bonus, all_sprites),
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
+            obstacles = \
+                sorted(filter(lambda sprite: type(sprite) is Obstacle and sprite.have_loot, all_sprites),
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
+            target = min(filter(len, [players, bonuses, obstacles]),
+                         key=lambda sprite: distance(self.x, self.y, sprite[0].x, sprite[0].y))
+            if target:
+                target_x, target_y = target[0].x - self.x, target[0].y - self.y
             else:
                 return None
         else:
@@ -253,23 +296,61 @@ class Tank(Entity):
                 target_angle += 180
         return target_angle + addition
 
+    def get_target_coords(self):
+        '''
+        Получаем цель танка
+        '''
+        if self.ai == 'enemy':
+            # Если танком управляет враг, то функция возвращает координаты ближайшего игрока
+            players = \
+                sorted(filter(lambda sprite: type(sprite) is Tank and sprite.team == 'player', all_sprites),
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
+            bonuses = \
+                sorted(filter(lambda sprite: type(sprite) is Bonus, all_sprites),
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
+            obstacles = \
+                sorted(filter(lambda sprite: type(sprite) is Obstacle and sprite.have_loot, all_sprites),
+                       key=lambda sprite: distance(self.x, self.y, sprite.x, sprite.y))
+            targets = filter(len, [players, bonuses, obstacles])
+            if targets:
+                target = min(targets, key=lambda sprite: distance(self.x, self.y, sprite[0].x, sprite[0].y))
+                return target[0].x, target[0].y
+        return None
+
+    def turn_to(self, target_x, target_y):
+        target_x, target_y = target_x - self.x, target_y - self.y
+        try:
+            target_angle = math.degrees(math.atan(target_y / target_x))
+        except ZeroDivisionError:
+            if target_y > 0:
+                target_angle = 90
+            elif target_y < 0:
+                target_angle = 270
+            else:
+                target_angle = 0
+        else:
+            if target_x < 0:
+                target_angle += 180
+        self.direction = target_angle + 90
+
     def shoot(self, camera=None):
         if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
-            all_sprites.add(Bullet(self.x, self.y, self.get_target(camera), 25, 'big', self.team))
-            self.shoot_sound.set_volume((1 - distance(self.x, self.y, CAMERA_X, CAMERA_Y) / 1080) / 2)
+            all_sprites.add(Bullet(self.x, self.y, self.get_target_angle(camera), 25, 'big', self.team))
+            self.shoot_sound.set_volume((1 - distance(self.x, self.y, CAMERA_X, CAMERA_Y) / 1080) / 4)
             self.shoot_sound.play()
             self.last_shot_time = pygame.time.get_ticks()
 
-    def update(self):
+    def update(self, map):
         super().update()
         if self.ai == 'enemy':
-            target = self.get_target()
-            if target:
-                self.direction = target + 90
-                self.move()
+            target_coords = self.get_target_coords()
+            if target_coords:
+                self.finder = PathFinder(map)
+                self.finder.make_distance_map(*target_coords)
+                next_move_x, next_move_y = self.finder.next_move(self.x, self.y)
+                self.turn_to(next_move_x, next_move_y)
+                self.move(1)
                 self.shoot()
-            else:
-                self.turn(5)
 
 
 class Turret(Entity):
@@ -354,7 +435,7 @@ class Turret(Entity):
             shoot_sound.play()
             self.last_shot_time = pygame.time.get_ticks()
 
-    def update(self):
+    def update(self, map):
         super().update()
         if self.ai == 'enemy':
             if self.get_target():
@@ -396,7 +477,7 @@ class Obstacle(Entity):
         screen.blit(self.image, (x + width // 2, y + height // 2))
         self.image = self.frames[frame // 60 % len(self.frames)]
 
-    def update(self):
+    def update(self, map):
         if self.health <= 0:
             if self.have_loot and random.randint(0, 1):
                 Bonus(self.x, self.y, random.randint(0, 1))
@@ -430,7 +511,7 @@ class Bonus(Entity):
         # Рисуем
         screen.blit(self.image, (x + width // 2, y + height // 2))
 
-    def update(self):
+    def update(self, map):
         if self.health <= 0:
             self.kill()
         for i in pygame.sprite.spritecollide(self, all_sprites, False):
@@ -470,7 +551,7 @@ class Shield(Entity):
         screen.blit(shield_surface, (x + width // 2, y + height // 2))
         pygame.draw.ellipse(screen, (0, 191, 255), pygame.Rect(x + width // 2, y + height // 2, 144, 144), width=2)
 
-    def update(self):
+    def update(self, map):
         if self.health <= 0:
             self.kill()
         self.x = self.attached_entity.x - 72
@@ -511,7 +592,7 @@ class Bullet(Entity):
         blit_rotate(screen, self.bullet, (x + width // 2, y + height // 2), (4, 4),
                     self.direction * -1)
 
-    def update(self):
+    def update(self, map):
         '''
         Перемещение снаряда
         '''
@@ -649,17 +730,20 @@ class Maps:
     """рисование поля"""
 
     def draw_field(self):
+        self.obstacle_map = [[None for _ in range(self.width_in_tiles)] for _ in range(self.height_in_tiles)]
         for x in range(0, self.width_in_tiles):
             for y in range(0, self.height_in_tiles):
                 if self.map[y][x] == '#':
                     # self.field.blit(sprite, (x * self.cell_size, y * self.cell_size))
                     self.create_obj(x, y, self.barrier, 0)
+                    self.obstacle_map[y][x] = float('inf')
                 if self.map[y][x] == 'L':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.light_box, 1, have_loot=1)
                 if self.map[y][x] == 'W':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.bush, 0)
+                    self.obstacle_map[y][x] = float('inf')
                 if self.map[y][x] == 'D':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.dark_box, 1, have_loot=1)
@@ -678,15 +762,19 @@ class Maps:
                 if self.map[y][x] == '+':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.stone_wall, 0)
+                    self.obstacle_map[y][x] = float('inf')
                 if self.map[y][x] == '-':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.sandstone_wall, 0)
+                    self.obstacle_map[y][x] = float('inf')
                 if self.map[y][x] == '=':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.wood_wall, 1)
+                    self.obstacle_map[y][x] = float('inf')
                 if self.map[y][x] == '~':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.water, 0, 1)
+                    self.obstacle_map[y][x] = float('inf')
 
     """Для заполения пола у ломающихся и не полностью заполненных объектов"""
 
@@ -714,9 +802,8 @@ if __name__ == '__main__':
     map.generate()
     # Создаем танк игрока
     player = Tank(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
-
     # Создаем танк врага
-    enemies.add(Tank(96 - 288 + 48, 96 - 288 + 48, ai='enemy', team='enemy'))
+    enemies.add(Tank(9 * 96 - 288 + 48, 9 * 96 - 288 + 48, ai='enemy', team='enemy'))
     enemies.add(Turret(9 * 96 - 288 + 48, 9 * 96 - 288 + 48))
 
     # Создаем камеру
@@ -768,7 +855,7 @@ if __name__ == '__main__':
 
         screen.fill((0, 0, 0))
         # Обновляем
-        all_sprites.update()
+        all_sprites.update(map)
         camera.update()
         CAMERA_X, CAMERA_Y = camera.x, camera.y
         # Рисуем все что надо
