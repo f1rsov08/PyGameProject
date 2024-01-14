@@ -6,18 +6,20 @@ import random
 import sqlite3
 
 pygame.init()
+
 size = WIDTH, HEIGHT = 1024, 680
 MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt', 'data/maps/maze.txt']
+
 size_monitor = width_monitor, height_monitor = (pygame.display.Info().current_w, pygame.display.Info().current_h)
 size_screen = width_screen, height_screen = 1024, 680
 screen = pygame.display.set_mode(size_screen)
+
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
 obstacles = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
+
 CAMERA_X, CAMERA_Y = 0, 0
-
-
 
 
 aimed_button_sound = pygame.mixer.Sound('data/sounds/aimed_button_sound.ogg')
@@ -29,25 +31,6 @@ is_full_screen = False
 current_type_tab = 'Main_Menu'
 input_name = ''
 basedata = 'data/basedata/basedata.db'
-
-
-def load_image(name, colorkey=None):
-    '''
-    Функция для загрузки изображений
-    '''
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    else:
-        image = image.convert_alpha()
-    return image
 
 
 def check_actived_accounts():
@@ -67,14 +50,18 @@ def check_actived_accounts():
 def full_screen():
     """Это функция для создания полноэкранного режима в игре"""
 
-    global screen, width_screen, height_screen, size_screen, width_monitor, height_monitor, is_full_screen
+    global screen, width_screen, height_screen, size_screen, width_monitor, height_monitor, is_full_screen, WIDTH, HEIGHT
     if not is_full_screen:
         size_screen = width_screen, height_screen = width_monitor, height_monitor
         screen = pygame.display.set_mode(size_monitor, pygame.FULLSCREEN)
+        WIDTH = width_monitor
+        HEIGHT = height_monitor
         is_full_screen = True
     else:
         size_screen = width_screen, height_screen = 1024, 680
         screen = pygame.display.set_mode(size_screen)
+        WIDTH = width_screen
+        HEIGHT = height_screen
         is_full_screen = False
     update_window()
 
@@ -191,6 +178,45 @@ def update_buttons_in_tab(list):
 
     for button in list:
         button.update()
+
+
+def load_image(name, colorkey=None):
+    '''
+    Функция для загрузки изображений
+    '''
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
+
+
+def blit_rotate(surf, image, pos, origin_pos, angle):
+    '''
+    Поворот спрайтов относительно центра
+    '''
+    image_rect = image.get_rect(topleft=(pos[0] - origin_pos[0], pos[1] - origin_pos[1]))
+    offset_center_to_pivot = pygame.math.Vector2(pos) - image_rect.center
+    rotated_offset = offset_center_to_pivot.rotate(-angle)
+    rotated_image_center = (pos[0] - rotated_offset.x, pos[1] - rotated_offset.y)
+    rotated_image = pygame.transform.rotate(image, angle)
+    rotated_image_rect = rotated_image.get_rect(center=rotated_image_center)
+    surf.blit(rotated_image, rotated_image_rect)
+
+
+def distance(x1, y1, x2, y2):
+    '''
+    Расчет расстояния между точками
+    '''
+    return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
 
 
 class Account_List:
@@ -324,7 +350,7 @@ class Main_Menu:
     """Для инициализации текстур"""
 
     def __init__(self):
-        self.background = pygame.transform.scale(load_image('images/background.png'), (width_screen, height_screen))
+        self.background = pygame.transform.scale(load_image('images/background_menu.png'), (width_screen, height_screen))
 
     """Для создания кнопок и других элементов"""
 
@@ -468,117 +494,14 @@ class Button:
                 quit()
             if self.input_text == 'Сохранить':
                 add_account()
+            if self.input_text == 'Уровень 1':
+                map.select(1)
+                map.generate()
+                current_type_tab = 'Game'
         else:
             current_name_user = self.input_text
             save()
             update_window()
-
-
-clock = pygame.time.Clock()
-
-running = True
-
-main_menu = Main_Menu()
-main_menu.create()
-
-current_name_user = check_actived_accounts()
-
-settings = Settings()
-settings.create()
-
-acc_list = Account_List()
-
-select_lvl = Select_Level()
-select_lvl.create()
-
-acc = Accounts()
-acc.create()
-
-acc_create = Account_Create()
-acc_create.create()
-
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN and event.key == 27:
-            current_type_tab = 'Main_Menu'
-            update_window()
-        if event.type == pygame.KEYDOWN and current_type_tab == 'Account_Create':
-            if event.unicode != '' and event.unicode != ' ' and event.unicode != '  ' and pygame.key.name(
-                    event.key) != 'backspace':
-                if len(input_name) <= 15:
-                    input_name += event.unicode
-                    acc_create.create_font(input_name)
-                else:
-                    print('Длина имени не может больше 15 симовлов')
-            if pygame.key.name(event.key) == 'backspace' and input_name:
-                input_name = input_name[0:-1]
-                acc_create.create_font(input_name)
-
-    if current_type_tab == 'Main_Menu':
-        main_menu.draw()
-    if current_type_tab == 'Settings':
-        settings.draw()
-    if current_type_tab == 'Select_level':
-        select_lvl.draw()
-    if current_type_tab == 'Accounts':
-        acc.draw()
-        acc_list.draw()
-    if current_type_tab == 'Account_Create':
-        acc_create.draw()
-    pygame.display.flip()
-    clock.tick(60)
-
-save()
-pygame.quit()
-
-fwef
-wf
-wfwef
-wef
-wf
-we
-
-
-
-def load_image(name, colorkey=None):
-    '''
-    Функция для загрузки изображений
-    '''
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    else:
-        image = image.convert_alpha()
-    return image
-
-
-def blit_rotate(surf, image, pos, origin_pos, angle):
-    '''
-    Поворот спрайтов относительно центра
-    '''
-    image_rect = image.get_rect(topleft=(pos[0] - origin_pos[0], pos[1] - origin_pos[1]))
-    offset_center_to_pivot = pygame.math.Vector2(pos) - image_rect.center
-    rotated_offset = offset_center_to_pivot.rotate(-angle)
-    rotated_image_center = (pos[0] - rotated_offset.x, pos[1] - rotated_offset.y)
-    rotated_image = pygame.transform.rotate(image, angle)
-    rotated_image_rect = rotated_image.get_rect(center=rotated_image_center)
-    surf.blit(rotated_image, rotated_image_rect)
-
-
-def distance(x1, y1, x2, y2):
-    '''
-    Расчет расстояния между точками
-    '''
-    return ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
 
 
 class Camera:
@@ -1233,12 +1156,27 @@ class Maps:
 
 
 if __name__ == '__main__':
+    main_menu = Main_Menu()
+    main_menu.create()
+
+    current_name_user = check_actived_accounts()
+
+    settings = Settings()
+    settings.create()
+
+    acc_list = Account_List()
+
+    select_lvl = Select_Level()
+    select_lvl.create()
+
+    acc = Accounts()
+    acc.create()
+
+    acc_create = Account_Create()
+    acc_create.create()
     # передается главный экран где будут отображаться все объекты
     map = Maps(screen)
     # это для выбора карты или можно map.selectrandod)
-    map.select(2)
-    # для создания карты
-    map.generate()
     # Создаем танк игрока
     player = Tank(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
 
@@ -1266,53 +1204,82 @@ if __name__ == '__main__':
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and player.alive():
                     player.shoot(camera)
+            elif event.type == pygame.KEYDOWN and event.key == 27:
+                current_type_tab = 'Main_Menu'
+                update_window()
+            elif event.type == pygame.KEYDOWN and current_type_tab == 'Account_Create':
+                if event.unicode != '' and event.unicode != ' ' and event.unicode != '  ' and pygame.key.name(
+                        event.key) != 'backspace':
+                    if len(input_name) <= 15:
+                        input_name += event.unicode
+                        acc_create.create_font(input_name)
+                    else:
+                        print('Длина имени не может больше 15 симовлов')
+                if pygame.key.name(event.key) == 'backspace' and input_name:
+                    input_name = input_name[0:-1]
+                    acc_create.create_font(input_name)
 
-        # Получаем кнопки, которые нажаты
-        keys = pygame.key.get_pressed()
-        # Управление на WASD
-        if player.alive():
-            if keys[pygame.K_w]:
-                player.move(2)
-            if keys[pygame.K_s]:
-                player.move(-2)
-            if keys[pygame.K_a]:
-                player.turn(-1.5)
-            if keys[pygame.K_d]:
-                player.turn(1.5)
-        else:
-            if keys[pygame.K_w]:
-                camera.move(0, -20)
-            if keys[pygame.K_s]:
-                camera.move(0, 20)
-            if keys[pygame.K_a]:
-                camera.move(-20, 0)
-            if keys[pygame.K_d]:
-                camera.move(20, 0)
-            if keys[pygame.K_q]:
-                camera.angle -= 1.5
-            if keys[pygame.K_e]:
-                camera.angle += 1.5
+        if current_type_tab == 'Main_Menu':
+            main_menu.draw()
+        if current_type_tab == 'Settings':
+            settings.draw()
+        if current_type_tab == 'Select_level':
+            select_lvl.draw()
+        if current_type_tab == 'Accounts':
+            acc.draw()
+            acc_list.draw()
+        if current_type_tab == 'Account_Create':
+            acc_create.draw()
+        if current_type_tab == 'Game':
 
-        screen.fill((0, 0, 0))
-        # Обновляем
-        all_sprites.update()
-        camera.update()
-        CAMERA_X, CAMERA_Y = camera.x, camera.y
-        # Рисуем все что надо
-        s = max(WIDTH, HEIGHT) * 1.42  # Типа корень из двух
-        test_screen = pygame.Surface((s, s))
-        map.draw(test_screen, camera)
-        camera.draw(test_screen, all_sprites, frame)
-        blit_rotate(screen, test_screen, (WIDTH // 2, HEIGHT // 2), (s // 2, s // 2), camera.angle)
+            # Получаем кнопки, которые нажаты
+            keys = pygame.key.get_pressed()
+            # Управление на WASD
+            if player.alive():
+                if keys[pygame.K_w]:
+                    player.move(2)
+                if keys[pygame.K_s]:
+                    player.move(-2)
+                if keys[pygame.K_a]:
+                    player.turn(-1.5)
+                if keys[pygame.K_d]:
+                    player.turn(1.5)
+            else:
+                if keys[pygame.K_w]:
+                    camera.move(0, -20)
+                if keys[pygame.K_s]:
+                    camera.move(0, 20)
+                if keys[pygame.K_a]:
+                    camera.move(-20, 0)
+                if keys[pygame.K_d]:
+                    camera.move(20, 0)
+                if keys[pygame.K_q]:
+                    camera.angle -= 1.5
+                if keys[pygame.K_e]:
+                    camera.angle += 1.5
 
-        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(10, 10, player.health * 2, 50), width=0)
-        pygame.draw.rect(screen, (128, 128, 128), pygame.Rect(10 + player.health * 2, 10, 200 - player.health * 2, 50),
-                         width=0)
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(10, 10, 200, 50), width=2)
-        # Обновляем экран
-        pygame.display.flip()
+            screen.fill((0, 0, 0))
+            # Обновляем
+            all_sprites.update()
+            camera.update()
+            CAMERA_X, CAMERA_Y = camera.x, camera.y
+            # Рисуем все что надо
+            s = max(WIDTH, HEIGHT) * 1.42  # Типа корень из двух
+            test_screen = pygame.Surface((s, s))
+            map.draw(test_screen, camera)
+            camera.draw(test_screen, all_sprites, frame)
+            blit_rotate(screen, test_screen, (WIDTH // 2, HEIGHT // 2), (s // 2, s // 2), camera.angle)
 
-        frame += 1
-        # Ждем следующий кадр
-        clock.tick(60)
+            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(10, 10, player.health * 2, 50), width=0)
+            pygame.draw.rect(screen, (128, 128, 128), pygame.Rect(10 + player.health * 2, 10, 200 - player.health * 2, 50),
+                             width=0)
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(10, 10, 200, 50), width=2)
+            # Обновляем экран
+            pygame.display.flip()
+
+            frame += 1
+            # Ждем следующий кадр
+            clock.tick(60)
+save()
 pygame.quit()
+

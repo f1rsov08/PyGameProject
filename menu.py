@@ -313,7 +313,7 @@ class Main_Menu:
     """Для инициализации текстур"""
 
     def __init__(self):
-        self.background = pygame.transform.scale(load_image('images/background.png'), (width_screen, height_screen))
+        self.background = pygame.transform.scale(load_image('images/background_menu.png'), (width_screen, height_screen))
 
     """Для создания кнопок и других элементов"""
 
