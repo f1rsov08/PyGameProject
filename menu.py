@@ -10,6 +10,9 @@ screen = pygame.display.set_mode(size)
 full_screen_coef = 1
 current_type_tab = 'Main_Menu'
 
+def account_list():
+    back_surface = pygame.surface.Surface()
+
 
 def full_screen():
     global screen, width, height,size, width1, height1, full_screen_coef
@@ -60,6 +63,29 @@ def load_image(name, colorkey=None):
         image = image.convert_alpha()
     return image
 
+class Accounts:
+    def __init__(self):
+        self.background = pygame.surface.Surface((width, height))
+        self.list_acc = pygame.surface.Surface((width // 2 - 10, height - 100))
+        self.background.fill((255, 255, 255, 0.1))
+        #pygame.draw.rect(self.background, (255, 255, 255, 0.1), (0, 0, width, height))
+
+        self.buttons = []
+
+    def create(self):
+        self.new_acc = Button((200, 80), (50, height // 2 - 200), 'black', 'Новый аккаунт', 'white', 20)
+        self.back = Button((200, 80), (50, height // 2 + 200), 'black', 'Назад', 'white', 40)
+        self.buttons.extend([self.new_acc, self.back])
+        for i in self.buttons:
+            i.create()
+
+    def draw(self):
+        screen.blit(self.background, (0, 0))
+        screen.blit(self.list_acc, (width // 2, 20))
+        for i in self.buttons:
+            i.update()
+
+
 class Settings:
     def __init__(self):
         self.background = pygame.transform.scale(load_image('images/background_settings.png'), (width, height))
@@ -67,8 +93,9 @@ class Settings:
 
     def create(self):
         self.full_display = Button((200, 80), (width // 2 - 100, height // 2 - 200), 'black', 'Полноэкранный режим', 'white', 20)
+        self.accounts = Button((200, 80), (width // 2 - 100, height // 2 - 100), 'black', 'Аккаунты', 'white', 30)
         self.back = Button((200, 80), (width // 2 + 200, height // 2 + 200), 'black', 'Назад', 'white', 40)
-        self.buttons.extend([self.full_display, self.back])
+        self.buttons.extend([self.full_display, self.back, self.accounts])
         for i in self.buttons:
             i.create()
 
@@ -192,6 +219,8 @@ class Button:
             back()
         if self.input_text == 'Выйти':
             quit()
+        if self.input_text == 'Аккаунты':
+            current_type_tab = 'Accounts'
 
 
 
@@ -206,6 +235,8 @@ settings = Settings()
 settings.create()
 select_lvl = Select_Level()
 select_lvl.create()
+acc = Accounts()
+acc.create()
 # but = Button((200, 100), (100, 100), 'black', "Играть", 'white', 40)
 # but.create()
 while running:
@@ -218,6 +249,8 @@ while running:
         settings.draw()
     if current_type_tab == 'Select_level':
         select_lvl.draw()
+    if current_type_tab == 'Accounts':
+        acc.draw()
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
