@@ -371,8 +371,8 @@ class Bonus(Entity):
         self.bonus_type = type
         self.x = x
         self.y = y
-        self.rect.x = self.x
-        self.rect.y = self.y
+        self.rect.x = self.x + 32
+        self.rect.y = self.y + 32
 
     def draw(self, screen, camera, frame):
         '''
