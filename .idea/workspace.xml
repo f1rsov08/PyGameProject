@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Сделал систему аккаунтов">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/basedata.db" beforeDir="false" afterPath="$PROJECT_DIR$/basedata.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/menu.py" afterDir="false" />
+    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Звуки">
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -302,14 +299,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1702579311781</updated>
-    </task>
-    <task id="LOCAL-00001" summary="Тест">
-      <option name="closed" value="true" />
-      <created>1702851240007</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1702851240007</updated>
     </task>
     <task id="LOCAL-00002" summary="Сделал игровое поле с текстурами, на котором можно кататься на танке">
       <option name="closed" value="true" />
@@ -679,7 +668,31 @@
       <option name="project" value="LOCAL" />
       <updated>1705258150613</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="Готове меню">
+      <option name="closed" value="true" />
+      <created>1705270459962</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1705270459962</updated>
+    </task>
+    <task id="LOCAL-00049" summary="База данных аккаунтов">
+      <option name="closed" value="true" />
+      <created>1705270527055</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1705270527055</updated>
+    </task>
+    <task id="LOCAL-00050" summary="Звуки">
+      <option name="closed" value="true" />
+      <created>1705270559479</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1705270559479</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -694,9 +707,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="сделал метод create" />
-    <MESSAGE value="сделал метод aimed_button_color для изменения цвета прр наведении курсора" />
-    <MESSAGE value="сделал метод not_aimed_button_color для изменения цвета прр наведении курсора" />
     <MESSAGE value="сделал метод create_font для создания текста" />
     <MESSAGE value="метод create_field_button для создания рамки кнопки" />
     <MESSAGE value="метод update для отрисовки" />
@@ -719,6 +729,9 @@
     <MESSAGE value="Почти доделал систему аккаунтов" />
     <MESSAGE value="Почти готовый список аккаунтов" />
     <MESSAGE value="Сделал систему аккаунтов" />
-    <option name="LAST_COMMIT_MESSAGE" value="Сделал систему аккаунтов" />
+    <MESSAGE value="Готове меню" />
+    <MESSAGE value="База данных аккаунтов" />
+    <MESSAGE value="Звуки" />
+    <option name="LAST_COMMIT_MESSAGE" value="Звуки" />
   </component>
 </project>

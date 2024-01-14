@@ -20,7 +20,7 @@ aimed_button_sound.set_volume(0.5)
 is_full_screen = False
 current_type_tab = 'Main_Menu'
 input_name = ''
-basedata = 'basedata.db'
+basedata = 'data/basedata/basedata.db'
 
 def load_image(name, colorkey=None):
     '''
