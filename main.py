@@ -123,9 +123,20 @@ class Tank(Entity):
     def __init__(self, x, y, direction=0, health=100, speed=1.5, reload_time=1000, ai='player', team='player'):
         super().__init__(x, y, direction, health, tanks)
         # Загрузка изображений
-        self.image_track = pygame.transform.scale(load_image("images/tank_track.png"), (64, 64))
+        image_track_left = pygame.transform.scale(load_image("images/tank_track_left.png"), (192, 64))
+        tank_track_right = pygame.transform.scale(load_image("images/tank_track_right.png"), (192, 64))
         self.image_turret = pygame.transform.scale(load_image("images/tank_turret.png"), (128, 128))
-        self.rect = self.image_track.get_rect()
+        self.rect = pygame.Rect(0, 0, 64, 64)
+        self.frames_left = []
+        self.frames_right = []
+        for i in range(3):
+            frame_location = (64 * i, 0)
+            self.frames_left.append(image_track_left.subsurface(pygame.Rect(
+                frame_location, self.rect.size)))
+            self.frames_right.append(tank_track_right.subsurface(pygame.Rect(
+                frame_location, self.rect.size)))
+        self.image_track_left = self.frames_left[0]
+        self.image_track_right = self.frames_right[0]
         # Задаем координаты танка
         self.rect.x = self.x
         self.rect.y = self.y
@@ -176,7 +187,22 @@ class Tank(Entity):
         if target_angle is None:
             target_angle = self.direction - 90
         # Рисуем
-        blit_rotate(screen, self.image_track, (x + width // 2, y + height // 2), (32, 32),
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            self.image_track_left = self.frames_left[frame // 5 % 3]
+            self.image_track_right = self.frames_right[frame // 5 % 3]
+        elif keys[pygame.K_s]:
+            self.image_track_left = self.frames_left[(frame // 5 % 3 + 1) * -1]
+            self.image_track_right = self.frames_right[(frame // 5 % 3 + 1) * -1]
+        elif keys[pygame.K_a]:
+            self.image_track_left = self.frames_left[(frame // 5 % 3 + 1) * -1]
+            self.image_track_right = self.frames_right[frame // 5 % 3]
+        elif keys[pygame.K_d]:
+            self.image_track_left = self.frames_left[frame // 5 % 3]
+            self.image_track_right = self.frames_right[(frame // 5 % 3 + 1) * -1]
+        blit_rotate(screen, self.image_track_left, (x + width // 2, y + height // 2), (32, 32),
+                    self.direction * -1)
+        blit_rotate(screen, self.image_track_right, (x + width // 2, y + height // 2), (32, 32),
                     self.direction * -1)
         blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
                     target_angle * -1 - 90)
@@ -433,7 +459,6 @@ class Shield(Entity):
             if i != self and type(i) is Shield and i.attached_entity == self.attached_entity:
                 i.health += 25
                 self.kill()
-
 
 
 class Bullet(Entity):
