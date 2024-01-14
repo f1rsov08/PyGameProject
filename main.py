@@ -5,7 +5,7 @@ import pygame
 import random
 
 pygame.init()
-size = WIDTH, HEIGHT = 800, 800
+size = WIDTH, HEIGHT = 1024, 680
 MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt', 'data/maps/maze.txt']
 screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
@@ -324,7 +324,7 @@ class Obstacle(Entity):
     Препятсвтие
     '''
 
-    def __init__(self, x, y, image, cell, can_break=0, skips_bullets=0):
+    def __init__(self, x, y, image, cell, can_break=0, skips_bullets=0, have_loot=0):
         super().__init__(x, y, 0, [float('inf'), 25][can_break], obstacles)
         self.rect = pygame.Rect(0, 0, cell, cell)
         rect = image.get_rect()
@@ -339,6 +339,7 @@ class Obstacle(Entity):
         self.rect.x = self.x
         self.rect.y = self.y
         self.skips_bullets = skips_bullets
+        self.have_loot = have_loot
 
     def draw(self, screen, camera, frame):
         '''
@@ -351,6 +352,83 @@ class Obstacle(Entity):
         # Рисуем
         screen.blit(self.image, (x + width // 2, y + height // 2))
         self.image = self.frames[frame // 60 % len(self.frames)]
+
+    def update(self):
+        if self.health <= 0:
+            if self.have_loot:
+                Bonus(self.x, self.y, random.randint(0, 1))
+            self.kill()
+
+
+class Bonus(Entity):
+    def __init__(self, x, y, type):
+        super().__init__(x, y, random.randint(0, 359), 25, all_sprites)
+        if type == 0:
+            self.image = pygame.transform.scale(load_image(f"images/medecine.png"), (64, 64))
+        elif type == 1:
+            self.image = pygame.transform.scale(load_image(f"images/shield.png"), (64, 64))
+        self.rect = self.image.get_rect()
+        self.bonus_type = type
+        self.x = x
+        self.y = y
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+    def draw(self, screen, camera, frame):
+        '''
+        Рисование коробки
+        '''
+        width, height = screen.get_width(), screen.get_height()
+        x = (camera.x - self.x) * -1
+        y = (camera.y - self.y) * -1
+        # Рисуем
+        screen.blit(self.image, (x + width // 2, y + height // 2))
+
+    def update(self):
+        if self.health <= 0:
+            self.kill()
+        for i in all_sprites:
+            if pygame.sprite.collide_rect(self, i) and i != self and type(i) is Tank:
+                if self.bonus_type == 0:
+                    if i.health <= 75:
+                        i.health += 25
+                    else:
+                        i.health = 100
+                if self.bonus_type == 1:
+                    Shield(i)
+                self.kill()
+
+
+class Shield(Entity):
+    def __init__(self, attached_entity):
+        super().__init__(attached_entity.x, attached_entity.y, 0, 25, all_sprites)
+        self.rect = pygame.Rect(attached_entity.x - 72, attached_entity.y - 72, 144, 144)
+        self.x = attached_entity.x - 72
+        self.y = attached_entity.y - 72
+        self.attached_entity = attached_entity
+        self.team = attached_entity.team
+
+    def draw(self, screen, camera, frame):
+        '''
+        Рисование коробки
+        '''
+        width, height = screen.get_width(), screen.get_height()
+        x = (camera.x - self.x) * -1
+        y = (camera.y - self.y) * -1
+        # Рисуем
+        shield_surface = pygame.Surface((1000, 750), pygame.SRCALPHA)
+        pygame.draw.ellipse(shield_surface, (0, 191, 255), pygame.Rect(0, 0, 144, 144))
+        shield_surface.set_alpha(50)
+        screen.blit(shield_surface, (x + width // 2, y + height // 2))
+        pygame.draw.ellipse(screen, (0, 191, 255), pygame.Rect(x + width // 2, y + height // 2, 144, 144), width=2)
+
+    def update(self):
+        if self.health <= 0:
+            self.kill()
+        self.x = self.attached_entity.x - 72
+        self.y = self.attached_entity.y - 72
+        self.rect.x = self.attached_entity.x - 72
+        self.rect.y = self.attached_entity.y - 72
 
 
 class Bullet(Entity):
@@ -394,7 +472,7 @@ class Bullet(Entity):
             self.kill()
         for i in all_sprites:
             if pygame.sprite.collide_rect(self, i) and i != self and not (
-                    type(i) in [Tank, Turret, Bullet] and i.team == self.team) and type(i) is not Bullet and not (
+                    type(i) in [Tank, Turret, Shield] and i.team == self.team) and type(i) is not Bullet and not (
                     type(i) is Obstacle and i.skips_bullets):
                 i.health -= self.damage
                 self.kill()
@@ -409,8 +487,8 @@ class Maps:
 
     """создание объектов на карте"""
 
-    def create_obj(self, x, y, image, can_break, skips_bullets=0):
-        Obstacle(x, y, image, self.cell_size, can_break, skips_bullets)
+    def create_obj(self, x, y, image, can_break, skips_bullets=0, have_loot=0):
+        Obstacle(x, y, image, self.cell_size, can_break, skips_bullets, have_loot)
 
     """обновление карты"""
 
@@ -526,13 +604,13 @@ class Maps:
                     self.create_obj(x, y, self.barrier, 0)
                 if self.map[y][x] == 'L':
                     self.fill_ground_png(x, y)
-                    self.create_obj(x, y, self.light_box, 1)
+                    self.create_obj(x, y, self.light_box, 1, have_loot=1)
                 if self.map[y][x] == 'W':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.bush, 0)
                 if self.map[y][x] == 'D':
                     self.fill_ground_png(x, y)
-                    self.create_obj(x, y, self.dark_box, 1)
+                    self.create_obj(x, y, self.dark_box, 1, have_loot=1)
                     # self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
                     # self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '0':
@@ -647,6 +725,11 @@ if __name__ == '__main__':
         map.draw(test_screen, camera)
         camera.draw(test_screen, all_sprites, frame)
         blit_rotate(screen, test_screen, (WIDTH // 2, HEIGHT // 2), (s // 2, s // 2), camera.angle)
+
+        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(10, 10, player.health * 2, 50), width=0)
+        pygame.draw.rect(screen, (128, 128, 128), pygame.Rect(10 + player.health * 2, 10, 200 - player.health * 2, 50),
+                         width=0)
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(10, 10, 200, 50), width=2)
         # Обновляем экран
         pygame.display.flip()
 
