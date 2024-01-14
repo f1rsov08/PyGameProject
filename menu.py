@@ -3,7 +3,6 @@ import os
 import sys
 import sqlite3
 
-"""Это класс меню игры"""
 pygame.init()
 
 size_monitor = width_monitor, height_monitor = (pygame.display.Info().current_w, pygame.display.Info().current_h)
