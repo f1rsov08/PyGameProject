@@ -6,7 +6,6 @@ import sqlite3
 """Это класс меню игры"""
 pygame.init()
 
-
 size_monitor = width_monitor, height_monitor = (pygame.display.Info().current_w, pygame.display.Info().current_h)
 size_screen = width_screen, height_screen = 1024, 680
 screen = pygame.display.set_mode(size_screen)
@@ -16,11 +15,11 @@ clicked_button_sound = pygame.mixer.Sound("data/sounds/clicked_button_sound.ogg"
 clicked_button_sound.set_volume(0.1)
 aimed_button_sound.set_volume(0.5)
 
-
 is_full_screen = False
 current_type_tab = 'Main_Menu'
 input_name = ''
 basedata = 'data/basedata/basedata.db'
+
 
 def load_image(name, colorkey=None):
     '''
@@ -40,8 +39,8 @@ def load_image(name, colorkey=None):
         image = image.convert_alpha()
     return image
 
-def check_actived_accounts():
 
+def check_actived_accounts():
     """Это функция для проверки последнего выюранного аккаунта"""
 
     con = sqlite3.connect(basedata)
@@ -54,8 +53,8 @@ def check_actived_accounts():
     con.close()
     return ''
 
-def full_screen():
 
+def full_screen():
     """Это функция для создания полноэкранного режима в игре"""
 
     global screen, width_screen, height_screen, size_screen, width_monitor, height_monitor, is_full_screen
@@ -69,8 +68,8 @@ def full_screen():
         is_full_screen = False
     update_window()
 
-def update_window():
 
+def update_window():
     """Это функция для обновления всех вкладок"""
 
     tabs = [main_menu, settings, select_lvl, acc_list, acc_create, acc]
@@ -80,15 +79,14 @@ def update_window():
 
 
 def reset_all_input_text():
-
     """Это функция для очищения всех полей с вводом"""
 
     global input_name
     acc_create.create_font('')
     input_name = ''
 
-def back_to_menu():
 
+def back_to_menu():
     """Это функция для возвращения к предыдущей вкладке"""
 
     global current_type_tab
@@ -106,8 +104,8 @@ def back_to_menu():
         main_menu.create()
     reset_all_input_text()
 
-def quit():
 
+def quit():
     """Это функция для выхода из игры"""
 
     global running
@@ -115,7 +113,6 @@ def quit():
 
 
 def add_account():
-
     """Это функция для создания аккаунта"""
 
     global current_type_tab, input_name, current_name_user
@@ -144,8 +141,8 @@ def add_account():
     acc_list.__init__()
     acc_list.create()
 
-def save():
 
+def save():
     """Это функция делает аккаунт активным"""
 
     con = sqlite3.connect(basedata)
@@ -154,8 +151,8 @@ def save():
     con.commit()
     con.close()
 
-def delete_account(name):
 
+def delete_account(name):
     """Это функция удаляет аккаунт"""
 
     global current_name_user
@@ -171,30 +168,29 @@ def delete_account(name):
     settings.__init__()
     settings.create()
 
-def create_buttons_in_tab(list):
 
+def create_buttons_in_tab(list):
     """Это функция создает кнопки"""
 
     for button in list:
         button.create()
 
-def update_buttons_in_tab(list):
 
+def update_buttons_in_tab(list):
     """Это функция обновляет кнопки"""
 
     for button in list:
         button.update()
 
 
-
 class Account_List:
-
     """Класс списка аккаунтов"""
 
     """Для инициализации текстур"""
 
     def __init__(self):
-        self.background = pygame.transform.scale(load_image('images/background_list.png'),(width_screen // 2 - 10, height_screen - 100))
+        self.background = pygame.transform.scale(load_image('images/background_list.png'),
+                                                 (width_screen // 2 - 10, height_screen - 100))
         pygame.draw.rect(self.background, 'black', (0, 0, width_screen // 2 - 10, height_screen - 100), 5)
 
     """Для создания списка с аккаунтами и кнопок"""
@@ -209,7 +205,7 @@ class Account_List:
 
         for acc in list_accounts:
             count += 40
-            account_button = Button((width_screen // 2 - 20, 30), (width_screen // 2 + 5, count),  acc[0],  20, 0)
+            account_button = Button((width_screen // 2 - 20, 30), (width_screen // 2 + 5, count), acc[0], 20, 0)
             account_button.create()
             self.accounts.append(account_button)
 
@@ -221,7 +217,6 @@ class Account_List:
 
 
 class Account_Create:
-
     """Класс вкладки для создания аккаунтов"""
 
     """Для инициализации текстур"""
@@ -234,8 +229,8 @@ class Account_Create:
     """Для создания кнопок и других элементов"""
 
     def create(self):
-        save = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 + 80),  'Сохранить',  32)
-        back = Button((200, 80), (50, height_screen // 2 + 0.25 * height_screen),  'Назад',  40)
+        save = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 + 80), 'Сохранить', 32)
+        back = Button((200, 80), (50, height_screen // 2 + 0.25 * height_screen), 'Назад', 40)
         self.buttons = [save, back]
         create_buttons_in_tab(self.buttons)
         reset_all_input_text()
@@ -256,7 +251,6 @@ class Account_Create:
 
 
 class Accounts:
-
     """Класс вкладки с аккаунтами"""
 
     """Для инициализации текстур"""
@@ -267,8 +261,8 @@ class Accounts:
     """Для создания кнопок и других элементов"""
 
     def create(self):
-        create_new_account = Button((200, 80), (50, height_screen // 2 - 0.25 * height_screen),  'Новый аккаунт',  26)
-        back = Button((200, 80), (50, height_screen // 2 + 0.25 * height_screen),  'Назад',  40)
+        create_new_account = Button((200, 80), (50, height_screen // 2 - 0.25 * height_screen), 'Новый аккаунт', 26)
+        back = Button((200, 80), (50, height_screen // 2 + 0.25 * height_screen), 'Назад', 40)
         self.buttons = [back, create_new_account]
         create_buttons_in_tab(self.buttons)
 
@@ -278,22 +272,23 @@ class Accounts:
         screen.blit(self.background, (0, 0))
         update_buttons_in_tab(self.buttons)
 
-class Settings:
 
+class Settings:
     """Класс вкладки с настройками"""
 
     """Для инициализации текстур"""
 
     def __init__(self):
-        self.background = pygame.transform.scale(load_image('images/background_settings.png'), (width_screen, height_screen))
+        self.background = pygame.transform.scale(load_image('images/background_settings.png'),
+                                                 (width_screen, height_screen))
         self.buttons = []
 
     """Для создания кнопок и других элементов"""
 
     def create(self):
-        full_display = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 - 200),  'Full Screen', 32)
-        accounts = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 - 100),  'Аккаунты',  32)
-        back = Button((200, 80), (width_screen - 250, height_screen // 2 + 0.25 * height_screen),  'Назад',  40)
+        full_display = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 - 200), 'Full Screen', 32)
+        accounts = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 - 100), 'Аккаунты', 32)
+        back = Button((200, 80), (width_screen - 250, height_screen // 2 + 0.25 * height_screen), 'Назад', 40)
         self.buttons = [full_display, accounts, back]
         create_buttons_in_tab(self.buttons)
         self.create_text_user()
@@ -314,7 +309,6 @@ class Settings:
 
 
 class Main_Menu:
-
     """Класс главного меню"""
 
     """Для инициализации текстур"""
@@ -325,9 +319,9 @@ class Main_Menu:
     """Для создания кнопок и других элементов"""
 
     def create(self):
-        play = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 + 30),  'Играть',  40)
-        settings = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 + 120),  'Настройки',  40)
-        quit = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 + 210),  'Выйти',  40)
+        play = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 + 30), 'Играть', 40)
+        settings = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 + 120), 'Настройки', 40)
+        quit = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 + 210), 'Выйти', 40)
         self.buttons = [play, settings, quit]
         create_buttons_in_tab(self.buttons)
 
@@ -337,22 +331,24 @@ class Main_Menu:
         screen.blit(self.background, (0, 0))
         update_buttons_in_tab(self.buttons)
 
-class Select_Level:
 
+class Select_Level:
     """Класс вкладки с выбором уровней"""
 
     """Для инициализации текстур"""
+
     def __init__(self):
-        self.background = pygame.transform.scale(load_image('images/background_select_level.png'), (width_screen, height_screen))
+        self.background = pygame.transform.scale(load_image('images/background_select_level.png'),
+                                                 (width_screen, height_screen))
         self.buttons = []
 
     """Для создания кнопок и других элементов"""
 
     def create(self):
         level_1 = Button((200, 200), (0.1 * width_screen, 0.2 * height_screen), 'Уровень 1', 30)
-        level_2 = Button((200, 200), (0.1 * width_screen + 220, 0.2 * height_screen), 'Уровень 2',  30)
-        level_3 = Button((200, 200), (0.11 * width_screen + 440, 0.2 * height_screen),  'Уровень 3',  30)
-        back = Button((200, 80), (width_screen // 2 + 200, height_screen // 2 + 200),  'Назад',  40)
+        level_2 = Button((200, 200), (0.1 * width_screen + 220, 0.2 * height_screen), 'Уровень 2', 30)
+        level_3 = Button((200, 200), (0.11 * width_screen + 440, 0.2 * height_screen), 'Уровень 3', 30)
+        back = Button((200, 80), (width_screen // 2 + 200, height_screen // 2 + 200), 'Назад', 40)
         self.buttons = [level_1, level_2, level_3, back]
         create_buttons_in_tab(self.buttons)
 
@@ -364,7 +360,6 @@ class Select_Level:
 
 
 class Button:
-
     """Класс кнопки"""
 
     """Для инициализации параметров кнопки"""
@@ -409,7 +404,8 @@ class Button:
     def create_font_and_text(self):
         font = pygame.font.Font('data/fonts/TunnelFront.ttf', self.font_size)
         self.output_text = font.render(self.input_text, True, 'white')
-        self.auto_font_pos = (self.width // 2 - font.size(self.input_text)[0] // 2, self.height // 2 - font.size(self.input_text)[1] // 2)
+        self.auto_font_pos = (
+            self.width // 2 - font.size(self.input_text)[0] // 2, self.height // 2 - font.size(self.input_text)[1] // 2)
 
     """Для создания поля кнопки"""
 
@@ -468,8 +464,6 @@ class Button:
             update_window()
 
 
-
-
 clock = pygame.time.Clock()
 
 running = True
@@ -501,7 +495,8 @@ while running:
             current_type_tab = 'Main_Menu'
             update_window()
         if event.type == pygame.KEYDOWN and current_type_tab == 'Account_Create':
-            if event.unicode != '' and event.unicode != ' ' and event.unicode != '  ' and pygame.key.name(event.key) != 'backspace':
+            if event.unicode != '' and event.unicode != ' ' and event.unicode != '  ' and pygame.key.name(
+                    event.key) != 'backspace':
                 if len(input_name) <= 15:
                     input_name += event.unicode
                     acc_create.create_font(input_name)
