@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+import sqlite3
 
 pygame.init()
 disp = pygame.display.Info()
@@ -12,6 +13,19 @@ current_type_tab = 'Main_Menu'
 
 def account_list():
     back_surface = pygame.surface.Surface()
+
+
+def check_accs():
+    basedata = 'basedata.db'
+    con = sqlite3.connect(basedata)
+    cur = con.cursor()
+    for_enter = cur.execute("""SELECT account_names FROM accounts WHERE actived=1""").fetchall()
+   # for_spisok = cur.execute("""SELECT account_names FROM accounts""").fetchall()
+
+    if not for_enter:
+        return False# выводится окно с добавлением ника
+    return True
+    con.close()
 
 
 def full_screen():
@@ -32,6 +46,8 @@ def update_after_change_size_screen():
     settings.create()
     select_lvl.__init__()
     select_lvl.create()
+    acc.__init__()
+    acc.create()
 
 def back():
     global current_type_tab
@@ -62,6 +78,23 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+class Input_Text:
+    def __init__(self):
+        self.background = pygame.surface.Surface((width, height))
+        self.background.fill((255, 255, 255, 0.1))
+
+    def create(self, size, pos):
+        self.size = size
+        self.pos = pos
+        self.field_input = pygame.surface.Surface((self.size[0], self.size[1]))
+
+    def create_font(self):
+        self.font = pygame.font.Font('data/fonts/TunnelFront.ttf', 16)
+        self.output_text = self.font.render(self.text, True, 'white')
+
+
+
 
 class Accounts:
     def __init__(self):
@@ -237,12 +270,13 @@ select_lvl = Select_Level()
 select_lvl.create()
 acc = Accounts()
 acc.create()
-# but = Button((200, 100), (100, 100), 'black', "Играть", 'white', 40)
-# but.create()
+if
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN and current_type_tab == 'Input_Text':
+            print(event.unicode)
     if current_type_tab == 'Main_Menu':
         main_menu.draw()
     if current_type_tab == 'Settings':
