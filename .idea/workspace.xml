@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="добавил функцию проверки наличия аккаунта">
+    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Фоны">
       <change afterPath="$PROJECT_DIR$/test2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/menu.py" afterDir="false" />
     </list>
@@ -73,7 +72,7 @@
       <recent name="C:\Users\admin\PycharmProjects\PyGameProject\data" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.forbasedata">
+  <component name="RunManager" selected="Python.menu (1)">
     <configuration name="Test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PyGameProject" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -286,8 +285,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.forbasedata" />
         <item itemvalue="Python.menu (1)" />
+        <item itemvalue="Python.forbasedata" />
         <item itemvalue="Python.test2" />
         <item itemvalue="Python.Test" />
         <item itemvalue="Python.pgm" />
@@ -631,7 +630,31 @@
       <option name="project" value="LOCAL" />
       <updated>1705238551169</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="Добавил функцию save">
+      <option name="closed" value="true" />
+      <created>1705242251038</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1705242251038</updated>
+    </task>
+    <task id="LOCAL-00043" summary="Добавил функцию для сохранения данных перед выходом">
+      <option name="closed" value="true" />
+      <created>1705245360624</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1705245360624</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Фоны">
+      <option name="closed" value="true" />
+      <created>1705245907589</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1705245907589</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -646,8 +669,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Перенес в папку images" />
-    <MESSAGE value="Слияние" />
     <MESSAGE value="Исправил баг в методе fill_ground_png" />
     <MESSAGE value="Класс Button" />
     <MESSAGE value="сделал __init__" />
@@ -664,13 +685,15 @@
     <MESSAGE value="метод full_screen для полного экрана" />
     <MESSAGE value="вывел full_screen  в отдельную функцию" />
     <MESSAGE value="добавил функцию back для возвращения в меню" />
-    <MESSAGE value="Фоны" />
     <MESSAGE value="Добавил класс Select_level и функцию  quit" />
     <MESSAGE value="Функция для обновления объектов после изменения размеров экрана" />
     <MESSAGE value="Фон" />
     <MESSAGE value="Шрифт" />
     <MESSAGE value="test" />
     <MESSAGE value="добавил функцию проверки наличия аккаунта" />
-    <option name="LAST_COMMIT_MESSAGE" value="добавил функцию проверки наличия аккаунта" />
+    <MESSAGE value="Добавил функцию save" />
+    <MESSAGE value="Добавил функцию для сохранения данных перед выходом" />
+    <MESSAGE value="Фоны" />
+    <option name="LAST_COMMIT_MESSAGE" value="Фоны" />
   </component>
 </project>

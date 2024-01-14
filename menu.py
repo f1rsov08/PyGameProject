@@ -26,12 +26,7 @@ def check_accs():
     print(for_enter)
     # for_spisok = cur.execute("""SELECT account_names FROM accounts""").fetchall()
     con.close()
-
-    if not for_enter:
-        print(2)
-        return False  # выводится окно с добавлением ника
-    return True
-
+    return for_enter[0][0]
 
 def full_screen():
     global screen, width, height, size, width1, height1, full_screen_coef
@@ -107,11 +102,14 @@ def save():
         for_add2 = cur.execute(exec3).fetchall()
     current_type_tab = 'Accounts'
     current_name_user = input_name
+    input_name = ''
     con.commit()
     con.close()
     text.create_font('')
-    main_menu = Main_Menu()
+    main_menu.__init__()
     main_menu.create()
+    settings.__init__()
+    settings.create()
 
 
 def before_quit():
@@ -125,11 +123,30 @@ def before_quit():
    # for_enter = cur.execute("""SELECT account_names FROM accounts WHERE actived=1""").fetchall()
     for_spisok = cur.execute("""UPDATE accounts SET actived=0""").fetchall()
     # for_add = cur.execute("""INSERT INTO accounts(account_names) VALUES(?)""", (input_name,).fetchall()
-    print(for_spisok)
-    for_actived_last  = """UPDATE accounts SET actived=0 WHERE =1)"""
-    for_current =""""U  """
+    print(current_name_user)
+    for_actived_last = cur.execute(f"""UPDATE accounts SET actived=1 WHERE account_names='{current_name_user}'""").fetchall()
+
     con.commit()
     con.close()
+
+#def before_enter():
+#    global current_name_user
+#    basedata = 'basedata.db'
+#    con = sqlite3.connect(basedata)
+#
+#    cur = con.cursor()
+#
+#    # Выполнение запроса и получение всех результатов
+#    # for_enter = cur.execute("""SELECT account_names FROM accounts WHERE actived=1""").fetchall()
+#    for_spisok = cur.execute("""SELECT accounts SET actived=0""").fetchall()
+#    # for_add = cur.execute("""INSERT INTO accounts(account_names) VALUES(?)""", (input_name,).fetchall()
+#    print(for_spisok)
+#    for_actived_last = f"""UPDATE accounts SET actived=1 WHERE account_names="{current_name_user}")"""
+#
+#    con.commit()
+#    con.close()
+
+
 class Input_Text:
     def __init__(self):
         self.background = pygame.transform.scale(load_image('images/background_reg.png'), (width, height))
@@ -170,10 +187,6 @@ class Accounts:
         for i in self.buttons:
             i.create()
 
-    def create_font(self, text):
-        global current_name_user
-        self.font = pygame.font.Font('data/fonts/TunnelFront.ttf', 28)
-        self.output_text = self.font.render(text, True, 'white')
 
     def draw(self):
         screen.blit(self.background, (0, 0))
@@ -194,11 +207,19 @@ class Settings:
         self.back = Button((200, 80), (width // 2 + 200, height // 2 + 200), 'black', 'Назад', 'white', 40)
 
         self.buttons.extend([self.full_display, self.back, self.accounts])
+        self.create_font()
         for i in self.buttons:
             i.create()
 
+    def create_font(self):
+        global current_name_user
+        print(current_name_user, 13123213)
+        self.font = pygame.font.Font('data/fonts/TunnelFront.ttf', 28)
+        self.output_text = self.font.render("Текущий пользователь:" + current_name_user, True, 'black')
+
     def draw(self):
         screen.blit(self.background, (0, 0))
+        screen.blit(self.output_text, (50, 50))
         for i in self.buttons:
             i.update()
 
@@ -331,6 +352,7 @@ screen.fill('green')
 input_name = ''
 main_menu = Main_Menu()
 main_menu.create()
+current_name_user = check_accs()
 settings = Settings()
 settings.create()
 select_lvl = Select_Level()
@@ -339,7 +361,7 @@ acc = Accounts()
 acc.create()
 text = Input_Text()
 text.create()
-
+print(current_name_user)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -361,9 +383,8 @@ while running:
         acc.draw()
     if current_type_tab == 'Input_Text':
         text.draw()
-    print(current_type_tab)
     pygame.display.flip()
     clock.tick(60)
 
-
+before_quit()
 pygame.quit()
