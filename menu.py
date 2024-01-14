@@ -434,7 +434,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN and current_type_tab == 'Input_Text':
-            if event.unicode != '' and event.unicode != ' ' and pygame.key.name(event.key) != 'backspace' and len(input_name) <= 15:
+            if event.unicode != '' and event.unicode != ' ' and event.unicode != '  ' and pygame.key.name(event.key) != 'backspace' and len(input_name) <= 15:
                 input_name += event.unicode
                 text.create_font(input_name)
             if pygame.key.name(event.key) == 'backspace' and input_name:
