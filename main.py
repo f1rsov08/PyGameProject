@@ -191,7 +191,7 @@ class Tank(Entity):
         x = (camera.x - self.x) * -1
         y = (camera.y - self.y) * -1
         # Получаем направление к цели
-        target_angle = self.get_target_angle(camera)
+        target_angle = self.get_target(camera)
         if target_angle is None:
             target_angle = self.direction - 90
         # Рисуем
