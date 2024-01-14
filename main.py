@@ -154,6 +154,9 @@ class Tank(Entity):
         self.ai = ai
         self.team = team
 
+        self.turning = 0
+        self.moving = 0
+
     def move(self, multiplier=1):
         '''
         Перемещение танка
@@ -170,12 +173,14 @@ class Tank(Entity):
         if pygame.sprite.spritecollideany(self, obstacles):
             self.y -= y
             self.rect.y = self.y
+        self.moving = multiplier / abs(multiplier)
 
     def turn(self, angle):
         '''
         Поворот танка
         '''
         self.direction += angle
+        self.turning = angle / abs(angle)
 
     def draw(self, screen, camera, frame):
         '''
@@ -186,21 +191,20 @@ class Tank(Entity):
         x = (camera.x - self.x) * -1
         y = (camera.y - self.y) * -1
         # Получаем направление к цели
-        target_angle = self.get_target(camera)
+        target_angle = self.get_target_angle(camera)
         if target_angle is None:
             target_angle = self.direction - 90
         # Рисуем
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
+        if self.moving == 1:
             self.image_track_left = self.frames_left[frame // 5 % 3]
             self.image_track_right = self.frames_right[frame // 5 % 3]
-        elif keys[pygame.K_s]:
+        elif self.moving == -1:
             self.image_track_left = self.frames_left[(frame // 5 % 3 + 1) * -1]
             self.image_track_right = self.frames_right[(frame // 5 % 3 + 1) * -1]
-        elif keys[pygame.K_a]:
+        elif self.turning == -1:
             self.image_track_left = self.frames_left[(frame // 5 % 3 + 1) * -1]
             self.image_track_right = self.frames_right[frame // 5 % 3]
-        elif keys[pygame.K_d]:
+        elif self.turning == 1:
             self.image_track_left = self.frames_left[frame // 5 % 3]
             self.image_track_right = self.frames_right[(frame // 5 % 3 + 1) * -1]
         blit_rotate(screen, self.image_track_left, (x + width // 2, y + height // 2), (32, 32),
@@ -209,6 +213,8 @@ class Tank(Entity):
                     self.direction * -1)
         blit_rotate(screen, self.image_turret, (x + width // 2, y + height // 2), (64, 64),
                     target_angle * -1 - 90)
+        self.turning = 0
+        self.moving = 0
 
     def get_target(self, camera=None):
         '''
