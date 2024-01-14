@@ -498,6 +498,14 @@ class Button:
                 map.select(1)
                 map.generate()
                 current_type_tab = 'Game'
+            if self.input_text == 'Уровень 2':
+                map.select(2)
+                map.generate()
+                current_type_tab = 'Game'
+            if self.input_text == 'Уровень 3':
+                map.select(3)
+                map.generate()
+                current_type_tab = 'Game'
         else:
             current_name_user = self.input_text
             save()

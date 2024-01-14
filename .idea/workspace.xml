@@ -4,51 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Звуки">
-      <change afterPath="$PROJECT_DIR$/data/images/background_menu.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/images/shield.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/images/tank_track_left.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/images/tank_track_right.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/bonus_take.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/obstacle_break.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/tank_shoot.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/turret_shoot.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/turret_shoot_1.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/turret_shoot_2.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/turret_shoot_3.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/turret_shoot_4.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/turret_shoot_5.wav" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/sounds/turret_shoot_6.wav" afterDir="false" />
+    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="test">
       <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_28_12_2023_20_02__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/background.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/background_acc.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/background_acc.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/background_list.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/background_list.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/background_reg.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/background_reg.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/background_select_level.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/background_select_level.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/background_settings.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/background_settings.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/big_bullet.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/big_bullet.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/brick_barrier.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/brick_barrier.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/bullet.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/bullet.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/bush.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/bush.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/dark_box.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/dark_box.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/grass_ground.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/grass_ground.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/light_box.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/light_box.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/sand_ground.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/sand_ground.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/sandstone_wall.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/sandstone_wall.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/small_bullet.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/small_bullet.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/snow_ground.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/snow_ground.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/stone_ground.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/stone_ground.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/stone_wall.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/stone_wall.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/tank_track.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/tank_track.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/tank_turret.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/tank_turret.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/turret_track.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/turret_track.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/turret_turret.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/turret_turret.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/water.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/water.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/wood_ground.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/wood_ground.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/images/wood_wall.png" beforeDir="false" afterPath="$PROJECT_DIR$/data/images/wood_wall.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/menu.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,7 +24,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="main" />
+        <entry key="$PROJECT_DIR$" value="test" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -180,27 +139,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="menu (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="PyGameProject" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/menu.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="pgm" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PyGameProject" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -214,6 +152,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pgm.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tesrr" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PyGameProject" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tesrr.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -245,11 +204,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.menu (1)" />
         <item itemvalue="Python.forbasedata" />
-        <item itemvalue="Python.test2" />
+        <item itemvalue="Python.tesrr" />
         <item itemvalue="Python.Test" />
         <item itemvalue="Python.pgm" />
+        <item itemvalue="Python.test2" />
       </list>
     </recent_temporary>
   </component>
@@ -703,6 +662,36 @@
           <url>file://$PROJECT_DIR$/main.py</url>
           <line>504</line>
           <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>505</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>506</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>507</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>510</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>508</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>509</line>
+          <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
