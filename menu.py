@@ -10,6 +10,7 @@ size = width, height = 800, 800
 screen = pygame.display.set_mode(size)
 full_screen_coef = 1
 current_type_tab = 'Main_Menu'
+current_name_user = ''
 
 
 def account_list():
@@ -53,6 +54,8 @@ def update_after_change_size_screen():
     select_lvl.create()
     acc.__init__()
     acc.create()
+    text.__init__()
+    text.create()
 
 
 def back():
@@ -60,6 +63,7 @@ def back():
     current_type_tab = 'Main_Menu'
     main_menu.__init__()
     main_menu.create()
+    text.create_font('')
 
 
 def quit():
@@ -87,7 +91,7 @@ def load_image(name, colorkey=None):
 
 
 def save():
-    global current_type_tab
+    global current_type_tab, input_name, current_name_user
     basedata = 'basedata.db'
     con = sqlite3.connect(basedata)
     cur = con.cursor()
@@ -97,23 +101,45 @@ def save():
     for_id = cur.execute(exec2).fetchall()
     if not for_id:
         exec1 = f"""INSERT INTO accounts(id, account_names, actived) VALUES(1, "{input_name}", 1);"""
+        for_add1 = cur.execute(exec1).fetchall()
     else:
-        exec3 = f"""INSERT INTO accounts(id, account_names, actived) VALUES({exec2[-1][0] + 1}, "{input_name}", 1);"""
-    for_add = cur.execute(exec1).fetchall()
+        exec3 = f"""INSERT INTO accounts(id, account_names, actived) VALUES({for_id[-1][0] + 1}, "{input_name}", 0);"""
+        for_add2 = cur.execute(exec3).fetchall()
+    current_type_tab = 'Accounts'
+    current_name_user = input_name
     con.commit()
     con.close()
-    current_type_tab = 'Main_Menu'
+    text.create_font('')
+    main_menu = Main_Menu()
+    main_menu.create()
 
 
+def before_quit():
+    basedata = 'basedata.db'
+    con = sqlite3.connect(basedata)
+
+    # Создание курсора
+    cur = con.cursor()
+
+    # Выполнение запроса и получение всех результатов
+   # for_enter = cur.execute("""SELECT account_names FROM accounts WHERE actived=1""").fetchall()
+    for_spisok = cur.execute("""UPDATE accounts SET actived=0""").fetchall()
+    # for_add = cur.execute("""INSERT INTO accounts(account_names) VALUES(?)""", (input_name,).fetchall()
+    print(for_spisok)
+    for_actived_last  = """UPDATE accounts SET actived=0 WHERE =1)"""
+    for_current =""""U  """
+    con.commit()
+    con.close()
 class Input_Text:
     def __init__(self):
-        self.background = pygame.surface.Surface((width, height))
-        self.background.fill((255, 255, 255, 0.1))
+        self.background = pygame.transform.scale(load_image('images/background_reg.png'), (width, height))
         self.buttons = []
 
     def create(self):
         self.field_input = pygame.surface.Surface((250, 50))
         self.save = Button((200, 80), (0, height // 2), 'black', 'Сохранить', 'white', 20)
+        self.back = Button((200, 80), (0, height // 2 + 200), 'black', 'Назад', 'white', 20)
+        self.back.create()
         self.save.create()
         self.create_font('')
 
@@ -126,13 +152,13 @@ class Input_Text:
         screen.blit(self.field_input, (width // 2 - 125, height // 2))
         screen.blit(self.output_text, (width // 2 - 115, height // 2 + 5))
         self.save.update()
+        self.back.update()
 
 
 class Accounts:
     def __init__(self):
-        self.background = pygame.surface.Surface((width, height))
+        self.background = pygame.transform.scale(load_image('images/background_acc.png'), (width, height))
         self.list_acc = pygame.surface.Surface((width // 2 - 10, height - 100))
-        self.background.fill((255, 255, 255, 0.1))
         # pygame.draw.rect(self.background, (255, 255, 255, 0.1), (0, 0, width, height))
 
         self.buttons = []
@@ -143,6 +169,11 @@ class Accounts:
         self.buttons.extend([self.new_acc, self.back])
         for i in self.buttons:
             i.create()
+
+    def create_font(self, text):
+        global current_name_user
+        self.font = pygame.font.Font('data/fonts/TunnelFront.ttf', 28)
+        self.output_text = self.font.render(text, True, 'white')
 
     def draw(self):
         screen.blit(self.background, (0, 0))
@@ -161,6 +192,7 @@ class Settings:
                                    'white', 20)
         self.accounts = Button((200, 80), (width // 2 - 100, height // 2 - 100), 'black', 'Аккаунты', 'white', 30)
         self.back = Button((200, 80), (width // 2 + 200, height // 2 + 200), 'black', 'Назад', 'white', 40)
+
         self.buttons.extend([self.full_display, self.back, self.accounts])
         for i in self.buttons:
             i.create()
@@ -288,8 +320,9 @@ class Button:
         if self.input_text == 'Аккаунты':
             current_type_tab = 'Accounts'
         if self.input_text == 'Сохранить':
-            print(22)
             save()
+        if self.input_text == 'Новый аккаунт':
+            current_type_tab = 'Input_Text'
 
 
 clock = pygame.time.Clock()
@@ -306,15 +339,13 @@ acc = Accounts()
 acc.create()
 text = Input_Text()
 text.create()
-if not check_accs():
-    current_type_tab = 'Input_Text'
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN and current_type_tab == 'Input_Text':
-            if event.unicode != '' and event.unicode != ' ' and pygame.key.name(event.key) != 'backspace':
+            if event.unicode != '' and event.unicode != ' ' and pygame.key.name(event.key) != 'backspace' and len(input_name) <= 15:
                 input_name += event.unicode
                 text.create_font(input_name)
             if pygame.key.name(event.key) == 'backspace' and input_name:
