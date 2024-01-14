@@ -145,6 +145,34 @@ def before_quit():
 #
 #    con.commit()
 #    con.close()
+class Account_List:
+    def __init__(self):
+        self.list_acc = pygame.surface.Surface((width // 2 - 10, height - 100))
+        self.accs = []
+
+    def add_acc(self):
+        count = 0
+        print(3232)
+        basedata = 'basedata.db'
+        con = sqlite3.connect(basedata)
+        cur = con.cursor()
+        # for_enter = cur.execute("""SELECT account_names FROM accounts WHERE actived=1""").fetchall()
+        for_spisok = cur.execute("""SELECT account_names FROM accounts""").fetchall()
+        # for_add = cur.execute("""INSERT INTO accounts(account_names) VALUES(?)""", (input_name,).fetchall()
+       # for_actived_last = cur.execute(
+        #    f"""UPDATE accounts SET actived=1 WHERE account_names='{current_name_user}'""").fetchall()
+        con.commit()
+        con.close()
+        for i in for_spisok:
+            count += 30
+            self.acc = Button((width // 2 - 10 - 10, 30), (width // 2 - 10 + 10, count), 'black', i[0], 'white', 20)
+            self.acc.create()
+            self.accs.append(self.acc)
+
+    def draw(self):
+        screen.blit(self.list_acc, (width // 2, 0))
+        for i in self.accs:
+            i.update()
 
 
 class Input_Text:
@@ -175,7 +203,6 @@ class Input_Text:
 class Accounts:
     def __init__(self):
         self.background = pygame.transform.scale(load_image('images/background_acc.png'), (width, height))
-        self.list_acc = pygame.surface.Surface((width // 2 - 10, height - 100))
         # pygame.draw.rect(self.background, (255, 255, 255, 0.1), (0, 0, width, height))
 
         self.buttons = []
@@ -190,7 +217,6 @@ class Accounts:
 
     def draw(self):
         screen.blit(self.background, (0, 0))
-        screen.blit(self.list_acc, (width // 2, 20))
         for i in self.buttons:
             i.update()
 
@@ -340,6 +366,7 @@ class Button:
             quit()
         if self.input_text == 'Аккаунты':
             current_type_tab = 'Accounts'
+            listacc.add_acc()
         if self.input_text == 'Сохранить':
             save()
         if self.input_text == 'Новый аккаунт':
@@ -355,6 +382,7 @@ main_menu.create()
 current_name_user = check_accs()
 settings = Settings()
 settings.create()
+listacc = Account_List()
 select_lvl = Select_Level()
 select_lvl.create()
 acc = Accounts()
@@ -381,6 +409,7 @@ while running:
         select_lvl.draw()
     if current_type_tab == 'Accounts':
         acc.draw()
+        listacc.draw()
     if current_type_tab == 'Input_Text':
         text.draw()
     pygame.display.flip()
