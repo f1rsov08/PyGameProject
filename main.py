@@ -12,6 +12,7 @@ all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
 obstacles = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
+CAMERA_X, CAMERA_Y = 0, 0
 
 
 def load_image(name, colorkey=None):
@@ -137,6 +138,8 @@ class Tank(Entity):
                 frame_location, self.rect.size)))
         self.image_track_left = self.frames_left[0]
         self.image_track_right = self.frames_right[0]
+
+        self.shoot_sound = pygame.mixer.Sound('data/sounds/tank_shoot.wav')
         # Задаем координаты танка
         self.rect.x = self.x
         self.rect.y = self.y
@@ -247,6 +250,8 @@ class Tank(Entity):
     def shoot(self, camera=None):
         if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
             all_sprites.add(Bullet(self.x, self.y, self.get_target(camera), 25, 'big', self.team))
+            self.shoot_sound.set_volume((1 - distance(self.x, self.y, CAMERA_X, CAMERA_Y) / 1080) / 2)
+            self.shoot_sound.play()
             self.last_shot_time = pygame.time.get_ticks()
 
     def update(self):
@@ -272,6 +277,8 @@ class Turret(Entity):
         self.image_track = pygame.transform.scale(load_image("images/turret_track.png"), (64, 64))
         self.image_turret = pygame.transform.scale(load_image("images/turret_turret.png"), (128, 128))
         self.rect = self.image_track.get_rect()
+
+        self.shoot_sounds = [pygame.mixer.Sound(f'data/sounds/turret_shoot_{i}.wav') for i in range(1, 7)]
         # Задаем координаты турели
         self.rect.x = self.x
         self.rect.y = self.y
@@ -336,6 +343,9 @@ class Turret(Entity):
     def shoot(self):
         if pygame.time.get_ticks() - self.last_shot_time >= self.reload_time:
             all_sprites.add(Bullet(self.x, self.y, self.get_target(), 10, 'small', self.team))
+            shoot_sound = self.shoot_sounds[random.randint(0, 5)]
+            shoot_sound.set_volume((1 - distance(self.x, self.y, CAMERA_X, CAMERA_Y) / 3000) / 2)
+            shoot_sound.play()
             self.last_shot_time = pygame.time.get_ticks()
 
     def update(self):
@@ -366,6 +376,7 @@ class Obstacle(Entity):
         self.rect.y = self.y
         self.skips_bullets = skips_bullets
         self.have_loot = have_loot
+        self.break_sound = pygame.mixer.Sound(f'data/sounds/obstacle_break.wav')
 
     def draw(self, screen, camera, frame):
         '''
@@ -383,6 +394,8 @@ class Obstacle(Entity):
         if self.health <= 0:
             if self.have_loot and random.randint(0, 1):
                 Bonus(self.x, self.y, random.randint(0, 1))
+            self.break_sound.set_volume((1 - distance(self.x, self.y, CAMERA_X, CAMERA_Y) / 3000) / 2)
+            self.break_sound.play()
             self.kill()
 
 
@@ -399,6 +412,7 @@ class Bonus(Entity):
         self.y = y
         self.rect.x = self.x + 32
         self.rect.y = self.y + 32
+        self.take_sound = pygame.mixer.Sound(f'data/sounds/bonus_take.wav')
 
     def draw(self, screen, camera, frame):
         '''
@@ -422,6 +436,8 @@ class Bonus(Entity):
                         i.health = 100
                 if self.bonus_type == 1:
                     Shield(i)
+                self.take_sound.set_volume((1 - distance(self.x, self.y, CAMERA_X, CAMERA_Y) / 3000) / 2)
+                self.take_sound.play()
                 self.kill()
 
 
@@ -748,7 +764,7 @@ if __name__ == '__main__':
         # Обновляем
         all_sprites.update()
         camera.update()
-
+        CAMERA_X, CAMERA_Y = camera.x, camera.y
         # Рисуем все что надо
         s = max(WIDTH, HEIGHT) * 1.42  # Типа корень из двух
         test_screen = pygame.Surface((s, s))
