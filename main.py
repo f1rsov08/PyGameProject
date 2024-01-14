@@ -355,7 +355,7 @@ class Obstacle(Entity):
 
     def update(self):
         if self.health <= 0:
-            if self.have_loot:
+            if self.have_loot and random.randint(0, 1):
                 Bonus(self.x, self.y, random.randint(0, 1))
             self.kill()
 
@@ -387,8 +387,8 @@ class Bonus(Entity):
     def update(self):
         if self.health <= 0:
             self.kill()
-        for i in all_sprites:
-            if pygame.sprite.collide_rect(self, i) and i != self and type(i) is Tank:
+        for i in pygame.sprite.spritecollide(self, all_sprites, False):
+            if type(i) is Tank:
                 if self.bonus_type == 0:
                     if i.health <= 75:
                         i.health += 25
@@ -429,6 +429,11 @@ class Shield(Entity):
         self.y = self.attached_entity.y - 72
         self.rect.x = self.attached_entity.x - 72
         self.rect.y = self.attached_entity.y - 72
+        for i in pygame.sprite.spritecollide(self, all_sprites, False):
+            if i != self and type(i) is Shield and i.attached_entity == self.attached_entity:
+                i.health += 25
+                self.kill()
+
 
 
 class Bullet(Entity):
@@ -470,8 +475,8 @@ class Bullet(Entity):
         self.distance += 5
         if self.distance > 500:
             self.kill()
-        for i in all_sprites:
-            if pygame.sprite.collide_rect(self, i) and i != self and not (
+        for i in pygame.sprite.spritecollide(self, all_sprites, False):
+            if i != self and not (
                     type(i) in [Tank, Turret, Shield] and i.team == self.team) and type(i) is not Bullet and not (
                     type(i) is Obstacle and i.skips_bullets):
                 i.health -= self.damage
