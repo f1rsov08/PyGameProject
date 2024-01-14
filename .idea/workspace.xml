@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Фоны">
+    <list default="true" id="9c25703b-b1e0-4132-bf57-5b8dca87e0b3" name="Changes" comment="Почти готовый список аккаунтов">
       <change afterPath="$PROJECT_DIR$/test2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/menu.py" afterDir="false" />
@@ -654,7 +654,23 @@
       <option name="project" value="LOCAL" />
       <updated>1705245907589</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="Почти доделал систему аккаунтов">
+      <option name="closed" value="true" />
+      <created>1705247684676</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1705247684676</updated>
+    </task>
+    <task id="LOCAL-00046" summary="Почти готовый список аккаунтов">
+      <option name="closed" value="true" />
+      <created>1705249295809</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1705249295809</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -669,8 +685,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Исправил баг в методе fill_ground_png" />
-    <MESSAGE value="Класс Button" />
     <MESSAGE value="сделал __init__" />
     <MESSAGE value="сделал метод create" />
     <MESSAGE value="сделал метод aimed_button_color для изменения цвета прр наведении курсора" />
@@ -694,6 +708,8 @@
     <MESSAGE value="Добавил функцию save" />
     <MESSAGE value="Добавил функцию для сохранения данных перед выходом" />
     <MESSAGE value="Фоны" />
-    <option name="LAST_COMMIT_MESSAGE" value="Фоны" />
+    <MESSAGE value="Почти доделал систему аккаунтов" />
+    <MESSAGE value="Почти готовый список аккаунтов" />
+    <option name="LAST_COMMIT_MESSAGE" value="Почти готовый список аккаунтов" />
   </component>
 </project>

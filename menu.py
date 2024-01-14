@@ -24,9 +24,12 @@ def check_accs():
     cur = con.cursor()
     for_enter = cur.execute("""SELECT account_names FROM accounts WHERE actived=1""").fetchall()
     print(for_enter)
+    if for_enter:
     # for_spisok = cur.execute("""SELECT account_names FROM accounts""").fetchall()
+        return for_enter[0][0]
+    return ''
+
     con.close()
-    return for_enter[0][0]
 
 def full_screen():
     global screen, width, height, size, width1, height1, full_screen_coef
@@ -51,7 +54,8 @@ def update_after_change_size_screen():
     acc.create()
     text.__init__()
     text.create()
-
+    listacc.__init__()
+    listacc.add_acc()
 
 def back():
     global current_type_tab
@@ -94,6 +98,8 @@ def save():
     # for_spisok = cur.execute("""SELECT account_names FROM accounts""").fetchall()
     exec2 = """SELECT id FROM accounts"""
     for_id = cur.execute(exec2).fetchall()
+    if len(for_id) + 1 > 15:
+        return None
     if not for_id:
         exec1 = f"""INSERT INTO accounts(id, account_names, actived) VALUES(1, "{input_name}", 1);"""
         for_add1 = cur.execute(exec1).fetchall()
@@ -110,6 +116,8 @@ def save():
     main_menu.create()
     settings.__init__()
     settings.create()
+    listacc.__init__()
+    listacc.add_acc()
 
 
 def before_quit():
@@ -129,6 +137,25 @@ def before_quit():
     con.commit()
     con.close()
 
+def delete_acc(name):
+    global current_name_user
+    basedata = 'basedata.db'
+    con = sqlite3.connect(basedata)
+    cur = con.cursor()
+    # Выполнение запроса и получение всех результатов
+    # for_enter = cur.execute("""SELECT account_names FROM accounts WHERE actived=1""").fetcha
+    # ll()
+    print(name)
+    for_spisok = cur.execute(f"""DELETE FROM accounts WHERE account_names='{name}'""").fetchall()
+    # for_add = cur.execute("""INSERT INTO accounts(account_names) VALUES(?)""", (input_name,).fetchall()
+    con.commit()
+    con.close()
+    current_name_user = ''
+    listacc.__init__()
+    listacc.add_acc()
+    settings.__init__()
+    settings.create()
+
 #def before_enter():
 #    global current_name_user
 #    basedata = 'basedata.db'
@@ -142,17 +169,16 @@ def before_quit():
 #    # for_add = cur.execute("""INSERT INTO accounts(account_names) VALUES(?)""", (input_name,).fetchall()
 #    print(for_spisok)
 #    for_actived_last = f"""UPDATE accounts SET actived=1 WHERE account_names="{current_name_user}")"""
-#
 #    con.commit()
 #    con.close()
 class Account_List:
     def __init__(self):
-        self.list_acc = pygame.surface.Surface((width // 2 - 10, height - 100))
+        self.list_acc = pygame.transform.scale(load_image('images/background_list.png'),(width // 2 - 10, height - 100))
+        pygame.draw.rect(self.list_acc, 'black', (0, 0, width // 2 - 10, height - 100), 5)
         self.accs = []
 
     def add_acc(self):
-        count = 0
-        print(3232)
+        count = 50
         basedata = 'basedata.db'
         con = sqlite3.connect(basedata)
         cur = con.cursor()
@@ -164,15 +190,17 @@ class Account_List:
         con.commit()
         con.close()
         for i in for_spisok:
-            count += 30
-            self.acc = Button((width // 2 - 10 - 10, 30), (width // 2 - 10 + 10, count), 'black', i[0], 'white', 20)
+            count += 40
+            self.acc = Button((width // 2 - 20, 30), (width // 2 + 5, count), 'black', i[0], 'white', 20, 0)
             self.acc.create()
             self.accs.append(self.acc)
 
     def draw(self):
-        screen.blit(self.list_acc, (width // 2, 0))
+        screen.blit(self.list_acc, (width // 2, 50))
         for i in self.accs:
             i.update()
+
+
 
 
 class Input_Text:
@@ -182,6 +210,7 @@ class Input_Text:
 
     def create(self):
         self.field_input = pygame.surface.Surface((250, 50))
+        pygame.draw.rect(self.field_input, 'white', (0, 0, 250, 50), 1)
         self.save = Button((200, 80), (0, height // 2), 'black', 'Сохранить', 'white', 20)
         self.back = Button((200, 80), (0, height // 2 + 200), 'black', 'Назад', 'white', 20)
         self.back.create()
@@ -208,7 +237,7 @@ class Accounts:
         self.buttons = []
 
     def create(self):
-        self.new_acc = Button((200, 80), (50, height // 2 - 200), 'black', 'Новый аккаунт', 'white', 20)
+        self.new_acc = Button((200, 80), (50, height // 2 - 300), 'black', 'Новый аккаунт', 'white', 20)
         self.back = Button((200, 80), (50, height // 2 + 200), 'black', 'Назад', 'white', 40)
         self.buttons.extend([self.new_acc, self.back])
         for i in self.buttons:
@@ -219,7 +248,6 @@ class Accounts:
         screen.blit(self.background, (0, 0))
         for i in self.buttons:
             i.update()
-
 
 class Settings:
     def __init__(self):
@@ -291,7 +319,8 @@ class Select_Level:
 
 
 class Button:
-    def __init__(self, size, pos, color, text, color_text, size_font):
+    def __init__(self, size, pos, color, text, color_text, size_font, button=1):
+        self.but = button
         self.text = text
         self.color_text = color_text
         self.input_text = text
@@ -344,33 +373,43 @@ class Button:
     def draw(self):
         self.mouse_pos = pygame.mouse.get_pos()
         self.click = pygame.mouse.get_pressed()
+
         if self.x <= self.mouse_pos[0] <= self.x + self.width and self.y <= self.mouse_pos[1] <= self.y + self.height:
             self.aimed_button_color()
             if self.click[0] == 1:
                 self.pressed()
-
+            elif self.click[2] == True and not self.but:
+                print(11)
+                delete_acc(self.input_text)
         else:
             self.not_aimed_button_color()
 
     def pressed(self):
-        global current_type_tab
-        if self.input_text == 'Играть':
-            current_type_tab = 'Select_level'
-        if self.input_text == 'Настройки':
-            current_type_tab = 'Settings'
-        if self.input_text == 'Полноэкранный режим':
-            full_screen()
-        if self.input_text == 'Назад':
-            back()
-        if self.input_text == 'Выйти':
-            quit()
-        if self.input_text == 'Аккаунты':
-            current_type_tab = 'Accounts'
-            listacc.add_acc()
-        if self.input_text == 'Сохранить':
-            save()
-        if self.input_text == 'Новый аккаунт':
-            current_type_tab = 'Input_Text'
+        global current_type_tab, current_name_user
+        if self.but:
+            if self.input_text == 'Играть':
+                current_type_tab = 'Select_level'
+            elif self.input_text == 'Настройки':
+                current_type_tab = 'Settings'
+            elif self.input_text == 'Полноэкранный режим':
+                full_screen()
+            elif self.input_text == 'Назад':
+                back()
+            elif self.input_text == 'Выйти':
+                quit()
+            elif self.input_text == 'Аккаунты':
+                current_type_tab = 'Accounts'
+                listacc.add_acc()
+            elif self.input_text == 'Сохранить':
+                save()
+            elif self.input_text == 'Новый аккаунт':
+                current_type_tab = 'Input_Text'
+        else:
+            current_name_user = self.input_text
+            before_quit()
+            update_after_change_size_screen()
+
+
 
 
 clock = pygame.time.Clock()
@@ -401,6 +440,13 @@ while running:
             if pygame.key.name(event.key) == 'backspace' and input_name:
                 input_name = input_name[0:-1]
                 text.create_font(input_name)
+        #if event.type == pygame.MOUSEBUTTONDOWN and width // 2 <= pygame.mouse.get_pos()[0] <= width - 10 and 50 <= pygame.mouse.get_pos()[0] <= height - 100:
+        #    if event.button == 4:
+        #        print("Колесико мыши вращается вверх")
+        #    elif event.button == 5:
+        #        print("Колесико мыши вращается вниз")
+
+
     if current_type_tab == 'Main_Menu':
         main_menu.draw()
     if current_type_tab == 'Settings':
