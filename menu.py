@@ -26,6 +26,8 @@ input_name = ''
 basedata = 'data/basedata/basedata.db'
 pygame.mouse.set_visible(False)
 
+cursor = pygame.image.load('data/images/cursor.png')
+
 
 def load_image(name, colorkey=None):
     '''
@@ -44,8 +46,6 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
-
-cursor = load_image('images/cursor.png')
 
 
 def check_actived_accounts():
