@@ -12,13 +12,15 @@ screen = pygame.display.set_mode(size_screen)
 aimed_button_sound = pygame.mixer.Sound('data/sounds/aimed_button_sound.ogg')
 clicked_button_sound = pygame.mixer.Sound("data/sounds/clicked_button_sound.ogg")
 pygame.mixer.music.load('data/sounds/menu_music.mp3')
-pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.set_volume(0.04)
 pygame.mixer.music.play()
 
 clicked_button_sound.set_volume(0.1)
 aimed_button_sound.set_volume(0.5)
 
 is_full_screen = False
+is_play_music = True
+next_click = True
 current_type_tab = 'Main_Menu'
 input_name = ''
 basedata = 'data/basedata/basedata.db'
@@ -83,6 +85,14 @@ def update_window():
         tab.__init__()
         tab.create()
 
+def turn_off_music():
+    global is_play_music
+    if is_play_music:
+        pygame.mixer.music.pause()
+        is_play_music = False
+    else:
+        pygame.mixer.music.unpause()
+        is_play_music = True
 
 def reset_all_input_text():
     """Это функция для очищения всех полей с вводом"""
@@ -295,7 +305,7 @@ class Settings:
         full_display = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 - 200), 'Full Screen', 32)
         accounts = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 - 100), 'Аккаунты', 32)
         back = Button((200, 80), (width_screen - 250, height_screen // 2 + 0.25 * height_screen), 'Назад', 40)
-        off_music = Button((200, 80), (width_screen // 2 - 100, height_screen // 2), 'Отключить музыку', 24)
+        off_music = Button((200, 80), (width_screen // 2 - 100, height_screen // 2), 'Откл/Вкл музыку', 26)
         self.buttons = [full_display, accounts, back, off_music]
         create_buttons_in_tab(self.buttons)
         self.create_text_user()
@@ -435,9 +445,9 @@ class Button:
         click = pygame.mouse.get_pressed()
         if self.x <= mouse_pos[0] <= self.x + self.width and self.y <= mouse_pos[1] <= self.y + self.height:
             self.aimed_button_color()
-            if click[0] == 1:
+            if click[0] == 1 and event.type == pygame.MOUSEBUTTONDOWN:
                 self.pressed()
-            elif click[2] and not self.check_button:
+            elif click[2] and not self.check_button and event.type == pygame.MOUSEBUTTONDOWN:
                 delete_account(self.input_text)
         else:
             self.not_aimed_button_color()
@@ -445,8 +455,7 @@ class Button:
     """Для отслеэивания нажатой кнопки"""
 
     def pressed(self):
-        global current_type_tab, current_name_user
-        clicked_button_sound.play()
+        global current_type_tab, current_name_user, next_click
         if self.check_button:
             if self.input_text == 'Играть':
                 current_type_tab = 'Select_level'
@@ -465,10 +474,16 @@ class Button:
                 quit()
             if self.input_text == 'Сохранить':
                 add_account()
+            if self.input_text == 'Откл/Вкл музыку' and next_click:
+                turn_off_music()
+
         else:
             current_name_user = self.input_text
             save()
             update_window()
+        if next_click:
+            clicked_button_sound.play()
+            next_click = False
 
 
 clock = pygame.time.Clock()
@@ -498,6 +513,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEBUTTONUP:
+            next_click = True
         if event.type == pygame.KEYDOWN and event.key == 27:
             current_type_tab = 'Main_Menu'
             update_window()
