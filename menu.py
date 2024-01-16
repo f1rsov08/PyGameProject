@@ -11,6 +11,10 @@ screen = pygame.display.set_mode(size_screen)
 
 aimed_button_sound = pygame.mixer.Sound('data/sounds/aimed_button_sound.ogg')
 clicked_button_sound = pygame.mixer.Sound("data/sounds/clicked_button_sound.ogg")
+pygame.mixer.music.load('data/sounds/menu_music.mp3')
+pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.play()
+
 clicked_button_sound.set_volume(0.1)
 aimed_button_sound.set_volume(0.5)
 
@@ -18,6 +22,7 @@ is_full_screen = False
 current_type_tab = 'Main_Menu'
 input_name = ''
 basedata = 'data/basedata/basedata.db'
+pygame.mouse.set_visible(False)
 
 
 def load_image(name, colorkey=None):
@@ -37,6 +42,8 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
+cursor = load_image('images/cursor.png')
 
 
 def check_actived_accounts():
@@ -288,7 +295,8 @@ class Settings:
         full_display = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 - 200), 'Full Screen', 32)
         accounts = Button((200, 80), (width_screen // 2 - 100, height_screen // 2 - 100), 'Аккаунты', 32)
         back = Button((200, 80), (width_screen - 250, height_screen // 2 + 0.25 * height_screen), 'Назад', 40)
-        self.buttons = [full_display, accounts, back]
+        off_music = Button((200, 80), (width_screen // 2 - 100, height_screen // 2), 'Отключить музыку', 24)
+        self.buttons = [full_display, accounts, back, off_music]
         create_buttons_in_tab(self.buttons)
         self.create_text_user()
 
@@ -516,6 +524,8 @@ while running:
         acc_list.draw()
     if current_type_tab == 'Account_Create':
         acc_create.draw()
+    if pygame.mouse.get_focused():
+        screen.blit(cursor, (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]))
     pygame.display.flip()
     clock.tick(60)
 
