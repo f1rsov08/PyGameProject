@@ -17,6 +17,11 @@ obstacles = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 CAMERA_X, CAMERA_Y = 0, 0
 
+victory = None
+stat = {'Сделано выстрелов': 0,
+        'Получено урона': 0,
+        'Собрано бонусов': 0}
+
 aimed_button_sound = pygame.mixer.Sound('data/sounds/aimed_button_sound.ogg')
 clicked_button_sound = pygame.mixer.Sound("data/sounds/clicked_button_sound.ogg")
 pygame.mixer.music.load('data/sounds/menu_music.mp3')
@@ -37,6 +42,8 @@ pygame.mouse.set_visible(False)
 
 cursor = pygame.image.load('data/images/cursor.png')
 
+time = 0
+
 
 def check_actived_accounts():
     """Это функция для проверки последнего выюранного аккаунта"""
@@ -53,17 +60,38 @@ def check_actived_accounts():
 
 
 def open_level(num):
-    global current_type_tab
+    global current_type_tab, time
+    for i in all_sprites:
+        i.kill()
     pygame.mixer.music.pause()
     map.__init__(screen)
     map.select(num)
     # для создания карты
     map.generate()
     player.__init__(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
-    enemies.add(Tank(96 - 288 + 48, 96 - 288 + 48, ai='enemy', team='enemy'))
-    enemies.add(Turret(9 * 96 - 288 + 48, 9 * 96 - 288 + 48))
+    tank = Tank(random.randint(0, map.width_in_tiles * 96) - 288, random.randint(0, map.width_in_tiles * 96) - 288,
+                ai='enemy', team='enemy')
+    while pygame.sprite.spritecollideany(tank, obstacles):
+        tank.x = random.randint(0, map.width_in_tiles * 96) - 288
+        tank.y = random.randint(0, map.height_in_tiles * 96) - 288
+        tank.rect.x = tank.x
+        tank.rect.y = tank.y
+    enemies.add(tank)
+
+    turret = Turret(random.randint(0, map.width_in_tiles * 96) - 288, random.randint(0, map.width_in_tiles * 96) - 288)
+    while pygame.sprite.spritecollideany(turret, obstacles):
+        turret.x = random.randint(0, map.width_in_tiles * 96) - 288
+        turret.y = random.randint(0, map.height_in_tiles * 96) - 288
+        turret.rect.x = turret.x
+        turret.rect.y = turret.y
+    enemies.add(turret)
+
     camera.__init__(5 * 96 - 288 + 48, 5 * 96 - 288 + 48, 0, player)
     current_type_tab = 'Game'
+    stat = {'Сделано выстрелов': 0,
+            'Получено урона': 0,
+            'Собрано бонусов': 0}
+    time = pygame.time.get_ticks()
 
 
 def clear_screen():
@@ -304,6 +332,43 @@ class Accounts:
 
     def draw(self):
         screen.blit(self.background, (0, 0))
+        update_buttons_in_tab(self.buttons)
+
+
+class FinalWindow:
+    """Класс финального окна"""
+
+    """Для инициализации текстур"""
+
+    def __init__(self):
+        self.background = pygame.transform.scale(load_image('images/background_settings.png'),
+                                                 (width_screen, height_screen))
+
+    """Для создания кнопок и других элементов"""
+
+    def create(self):
+        back = Button((200, 80), (50, height_screen // 2 + 0.25 * height_screen), 'Назад', 40)
+        self.buttons = [back]
+        create_buttons_in_tab(self.buttons)
+
+    """Для создания текста со статистикой"""
+
+    def create_text(self):
+        minutes = (pygame.time.get_ticks() - time) // 60000
+        seconds = (pygame.time.get_ticks() - time) // 1000 - minutes * 60
+        font = pygame.font.Font('data/fonts/TunnelFront.ttf', 28)
+        self.stat = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        self.stat.blit(font.render(['Вы проиграли!', 'Вы победили!'][victory], True, 'black'), (50, 50))
+        self.stat.blit(font.render(f'Время: {str(minutes).rjust(2, "0")}:{str(seconds).rjust(2, "0")}', True, 'black'),
+                       (50, 100))
+        for i, key in enumerate(stat.keys()):
+            self.stat.blit(font.render(f'{key}: {stat[key]}', True, 'black'), (50, 150 + i * 50))
+
+    """Для отрисовки элементов"""
+
+    def draw(self):
+        screen.blit(self.background, (0, 0))
+        screen.blit(self.stat, (0, 0))
         update_buttons_in_tab(self.buttons)
 
 
@@ -939,6 +1004,8 @@ class Bonus(Entity):
                         i.health = 100
                 if self.bonus_type == 1:
                     Shield(i)
+                if i.team == 'player':
+                    stat['Собрано бонусов'] += 1
                 self.take_sound.set_volume((1 - distance(self.x, self.y, CAMERA_X, CAMERA_Y) / 3000) / 2)
                 self.take_sound.play()
                 self.kill()
@@ -1024,6 +1091,8 @@ class Bullet(Entity):
                     type(i) in [Tank, Turret, Shield] and i.team == self.team) and type(i) is not Bullet and not (
                     type(i) is Obstacle and i.skips_bullets):
                 i.health -= self.damage
+                if type(i) is Tank and i.team == 'player':
+                    stat['Получено урона'] += self.damage
                 self.kill()
 
 
@@ -1219,6 +1288,9 @@ if __name__ == '__main__':
     acc = Accounts()
     acc.create()
 
+    final_window = FinalWindow()
+    final_window.create()
+
     acc_create = Account_Create()
     acc_create.create()
     # передается главный экран где будут отображаться все объекты
@@ -1227,12 +1299,8 @@ if __name__ == '__main__':
     # Создаем танк игрока
     player = Tank(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
 
-    # Создаем танк врага
-
     # Создаем камеру
     camera = Camera(5 * 96 - 288 + 48, 5 * 96 - 288 + 48, 0, player)
-
-    # Добавляем танки во группу спрайтов
 
     # Часы
     clock = pygame.time.Clock()
@@ -1240,7 +1308,6 @@ if __name__ == '__main__':
     # Основной цикл
     running = True
     while running:
-
         # Проходимся по ивентам
         for event in pygame.event.get():
             # Если окно закрыли, то завершаем цикл
@@ -1248,6 +1315,7 @@ if __name__ == '__main__':
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN and current_type_tab == 'Game':
                 if event.button == 1 and player.alive():
+                    stat['Сделано выстрелов'] += 1
                     player.shoot(camera)
             if event.type == pygame.MOUSEBUTTONUP:
                 next_click = True
@@ -1279,6 +1347,8 @@ if __name__ == '__main__':
             acc_list.draw()
         if current_type_tab == 'Account_Create':
             acc_create.draw()
+        if current_type_tab == 'Final_Window':
+            final_window.draw()
         if current_type_tab == 'Game':
             # Получаем кнопки, которые нажаты
             keys = pygame.key.get_pressed()
@@ -1292,19 +1362,14 @@ if __name__ == '__main__':
                     player.turn(-1.5)
                 if keys[pygame.K_d]:
                     player.turn(1.5)
+                if len(enemies) == 0:
+                    victory = True
+                    current_type_tab = 'Final_Window'
+                    final_window.create_text()
             else:
-                if keys[pygame.K_w]:
-                    camera.move(0, -20)
-                if keys[pygame.K_s]:
-                    camera.move(0, 20)
-                if keys[pygame.K_a]:
-                    camera.move(-20, 0)
-                if keys[pygame.K_d]:
-                    camera.move(20, 0)
-                if keys[pygame.K_q]:
-                    camera.angle -= 1.5
-                if keys[pygame.K_e]:
-                    camera.angle += 1.5
+                victory = False
+                current_type_tab = 'Final_Window'
+                final_window.create_text()
 
             screen.fill((0, 0, 0))
             # Обновляем
@@ -1313,10 +1378,10 @@ if __name__ == '__main__':
             CAMERA_X, CAMERA_Y = camera.x, camera.y
             # Рисуем все что надо
             s = max(WIDTH, HEIGHT) * 1.42  # Типа корень из двух
-            test_screen = pygame.Surface((s, s))
-            map.draw(test_screen, camera)
-            camera.draw(test_screen, all_sprites, frame)
-            blit_rotate(screen, test_screen, (WIDTH // 2, HEIGHT // 2), (s // 2, s // 2), camera.angle)
+            new_screen = pygame.Surface((s, s))
+            map.draw(new_screen, camera)
+            camera.draw(new_screen, all_sprites, frame)
+            blit_rotate(screen, new_screen, (WIDTH // 2, HEIGHT // 2), (s // 2, s // 2), camera.angle)
 
             pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(10, 10, player.health * 2, 50), width=0)
             pygame.draw.rect(screen, (128, 128, 128),
