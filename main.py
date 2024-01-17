@@ -1185,7 +1185,7 @@ class Maps:
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.water, 0, 1)
 
-    """Для заполения пола у ломающихся и не полностью заполненных объектов"""
+    """Для заполения пола у ломающихся и не полностью заполненных объектов."""
 
     def fill_ground_png(self, x, y):
         list_of_number_plates = sorted(
@@ -1280,7 +1280,6 @@ if __name__ == '__main__':
         if current_type_tab == 'Account_Create':
             acc_create.draw()
         if current_type_tab == 'Game':
-
             # Получаем кнопки, которые нажаты
             keys = pygame.key.get_pressed()
             # Управление на WASD
