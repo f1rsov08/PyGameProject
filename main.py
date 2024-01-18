@@ -1,3 +1,4 @@
+#Дима
 import os
 import sys
 import math
@@ -8,9 +9,11 @@ import sqlite3
 pygame.init()
 size = WIDTH, HEIGHT = 1024, 680
 MAPS = ['data/maps/map1.txt', 'data/maps/mines.txt', 'data/maps/maze.txt']
+#Сергей
 size_monitor = width_monitor, height_monitor = (pygame.display.Info().current_w, pygame.display.Info().current_h)
 size_screen = width_screen, height_screen = 1024, 680
 screen = pygame.display.set_mode(size_screen)
+#Дима
 all_sprites = pygame.sprite.Group()
 tanks = pygame.sprite.Group()
 obstacles = pygame.sprite.Group()
@@ -22,6 +25,7 @@ stat = {'Сделано выстрелов': 0,
         'Получено урона': 0,
         'Собрано бонусов': 0}
 
+#Сергей
 aimed_button_sound = pygame.mixer.Sound('data/sounds/aimed_button_sound.ogg')
 clicked_button_sound = pygame.mixer.Sound("data/sounds/clicked_button_sound.ogg")
 pygame.mixer.music.load('data/sounds/menu_music.mp3')
@@ -44,7 +48,7 @@ cursor = pygame.image.load('data/images/cursor.png')
 
 time = 0
 
-
+#Сергей
 def check_actived_accounts():
     """Это функция для проверки последнего выюранного аккаунта"""
 
@@ -58,9 +62,9 @@ def check_actived_accounts():
     con.close()
     return ''
 
-
+#Дима
 def open_level(num):
-    global current_type_tab, time
+    global current_type_tab, time, stat
     for i in all_sprites:
         i.kill()
     pygame.mixer.music.pause()
@@ -93,7 +97,7 @@ def open_level(num):
             'Собрано бонусов': 0}
     time = pygame.time.get_ticks()
 
-
+#Сергей
 def clear_screen():
     for i in all_sprites:
         i.kill()
@@ -122,7 +126,7 @@ def full_screen():
 def update_window():
     """Это функция для обновления всех вкладок"""
 
-    tabs = [main_menu, settings, select_lvl, acc_list, acc_create, acc]
+    tabs = [main_menu, settings, select_lvl, acc_list, acc_create, acc,* final_window]
     for tab in tabs:
         tab.__init__()
         tab.create()
@@ -334,7 +338,7 @@ class Accounts:
         screen.blit(self.background, (0, 0))
         update_buttons_in_tab(self.buttons)
 
-
+#Дима
 class FinalWindow:
     """Класс финального окна"""
 
@@ -371,7 +375,7 @@ class FinalWindow:
         screen.blit(self.stat, (0, 0))
         update_buttons_in_tab(self.buttons)
 
-
+#Сергей
 class Settings:
     """Класс вкладки с настройками"""
 
@@ -576,7 +580,7 @@ class Button:
 
             next_click = False
 
-
+#Дима
 def load_image(name, colorkey=None):
     '''
     Функция для загрузки изображений
@@ -1095,7 +1099,7 @@ class Bullet(Entity):
                     stat['Получено урона'] += self.damage
                 self.kill()
 
-
+#Сергей
 class Maps:
     """КЛАСС КАРТ"""
 
@@ -1109,7 +1113,7 @@ class Maps:
         Obstacle(x, y, image, self.cell_size, can_break, skips_bullets, have_loot)
 
     """обновление карты"""
-
+#Дима
     def draw(self, screen, camera):
         width, height = screen.get_width(), screen.get_height()
         x = -camera.x - 288
@@ -1118,7 +1122,7 @@ class Maps:
         screen.blit(self.field, (x + width // 2, y + height // 2))
 
     """загрузка карты из txt формата"""
-
+#Сергей
     def load_map_from_txt(self):
         with open(self.choiced_map_txt, 'r', encoding='utf-8') as map:
             reading_map = map.readlines()
@@ -1193,9 +1197,11 @@ class Maps:
         if '3' in self.textures:
             self.wood_ground = pygame.transform.scale(load_image("images/wood_ground.png"),
                                                       (self.cell_size, self.cell_size))
+#Дима
         if '4' in self.textures:
             self.snow_ground = pygame.transform.scale(load_image("images/snow_ground.png"),
                                                       (self.cell_size, self.cell_size))
+#Сергей
         if '-' in self.textures:
             self.sandstone_wall = pygame.transform.scale(load_image("images/sandstone_wall.png"),
                                                          (self.cell_size, self.cell_size))
@@ -1205,9 +1211,11 @@ class Maps:
         if '=' in self.textures:
             self.wood_wall = pygame.transform.scale(load_image("images/wood_wall.png"),
                                                     (self.cell_size, self.cell_size))
+#Дима
         if '~' in self.textures:
             self.water = pygame.transform.scale(load_image("images/water.png"),
                                                 (self.cell_size * 2, self.cell_size))
+#Сергей
         if 'W' in self.textures:
             self.bush = pygame.transform.scale(load_image("images/bush.png"),
                                                (self.cell_size, self.cell_size))
@@ -1222,13 +1230,17 @@ class Maps:
                     self.create_obj(x, y, self.barrier, 0)
                 if self.map[y][x] == 'L':
                     self.fill_ground_png(x, y)
+#Дима
                     self.create_obj(x, y, self.light_box, 1, have_loot=1)
+#Сергей
                 if self.map[y][x] == 'W':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.bush, 0)
                 if self.map[y][x] == 'D':
                     self.fill_ground_png(x, y)
+#Дима
                     self.create_obj(x, y, self.dark_box, 1, have_loot=1)
+#Сергей
                     # self.field.blit(self.dark_box, (x * self.cell_size, y * self.cell_size))
                     # self.field.blit(self.box, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '0':
@@ -1240,7 +1252,9 @@ class Maps:
                 if self.map[y][x] == '3':
                     self.field.blit(self.wood_ground, (x * self.cell_size, y * self.cell_size))
                 if self.map[y][x] == '4':
+#Дима
                     self.field.blit(self.snow_ground, (x * self.cell_size, y * self.cell_size))
+#Сергей
                 if self.map[y][x] == '+':
                     self.fill_ground_png(x, y)
                     self.create_obj(x, y, self.stone_wall, 0)
@@ -1252,8 +1266,10 @@ class Maps:
                     self.create_obj(x, y, self.wood_wall, 1)
                 if self.map[y][x] == '~':
                     self.fill_ground_png(x, y)
+#Дима
                     self.create_obj(x, y, self.water, 0, 1)
 
+#Сергей
     """Для заполения пола у ломающихся и не полностью заполненных объектов."""
 
     def fill_ground_png(self, x, y):
@@ -1266,8 +1282,10 @@ class Maps:
                                                                (self.cell_size, self.cell_size))),
              (self.textures.count('3'), pygame.transform.scale(load_image("images/wood_ground.png"),
                                                                (self.cell_size, self.cell_size))),
+#Дима
              (self.textures.count('4'), pygame.transform.scale(load_image("images/snow_ground.png"),
                                                                (self.cell_size, self.cell_size)))], key=lambda x: x[0])
+#Сергей
         self.field.blit(list_of_number_plates[-1][1], (x * self.cell_size, y * self.cell_size))
 
 
@@ -1287,15 +1305,16 @@ if __name__ == '__main__':
 
     acc = Accounts()
     acc.create()
-
+#Дима
     final_window = FinalWindow()
     final_window.create()
-
+#Сергей
     acc_create = Account_Create()
     acc_create.create()
     # передается главный экран где будут отображаться все объекты
     map = Maps(screen)
-    # это для выбора карты или можно map.selectrandod
+    # это для выбора карты или можно map.selectrandom()
+#Дима
     # Создаем танк игрока
     player = Tank(5 * 96 - 288 + 48, 5 * 96 - 288 + 48)
 
@@ -1317,6 +1336,7 @@ if __name__ == '__main__':
                 if event.button == 1 and player.alive():
                     stat['Сделано выстрелов'] += 1
                     player.shoot(camera)
+#Сергей
             if event.type == pygame.MOUSEBUTTONUP:
                 next_click = True
             if event.type == pygame.KEYDOWN and event.key == 27:
@@ -1347,6 +1367,7 @@ if __name__ == '__main__':
             acc_list.draw()
         if current_type_tab == 'Account_Create':
             acc_create.draw()
+#Дима
         if current_type_tab == 'Final_Window':
             final_window.draw()
         if current_type_tab == 'Game':
@@ -1392,9 +1413,13 @@ if __name__ == '__main__':
 
             frame += 1
             # Ждем следующий кадр
+#Сергей
         if pygame.mouse.get_focused():
             screen.blit(cursor, (pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]))
+#Дима
         pygame.display.flip()
         clock.tick(60)
+#Сергей
 save()
+#Дима
 pygame.quit()
