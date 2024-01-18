@@ -126,7 +126,7 @@ def full_screen():
 def update_window():
     """Это функция для обновления всех вкладок"""
 
-    tabs = [main_menu, settings, select_lvl, acc_list, acc_create, acc,* final_window]
+    tabs = [main_menu, settings, select_lvl, acc_list, acc_create, acc, final_window]
     for tab in tabs:
         tab.__init__()
         tab.create()
